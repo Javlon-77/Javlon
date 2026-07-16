@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Gravity Sandbox - Koinot Simulyatori</title>
+    <title>Universe Creator - Koinot va Hayot Simulyatori</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: #030008;
+            background-color: #020005;
         }
         .neon-text {
             font-family: 'Orbitron', sans-serif;
@@ -19,75 +19,90 @@
         }
         canvas {
             display: block;
-            background: radial-gradient(circle, #090314 0%, #020005 100%);
+            background: radial-gradient(circle, #090314 0%, #010003 100%);
+        }
+        .active-tool {
+            background-color: rgb(147, 51, 234) !important;
+            border-color: rgb(192, 132, 252) !important;
+            color: white !important;
         }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col md:flex-row text-white select-none">
 
-    <!-- Chap tarafdagi boshqaruv paneli -->
-    <div class="w-full md:w-80 bg-black bg-opacity-80 backdrop-blur-md border-b md:border-b-0 md:border-r border-purple-900 border-opacity-40 p-5 flex flex-col justify-between z-10 shrink-0">
+    <!-- Boshqaruv paneli -->
+    <div class="w-full md:w-80 bg-black bg-opacity-90 backdrop-blur-md border-b md:border-b-0 md:border-r border-purple-900 border-opacity-40 p-5 flex flex-col justify-between z-10 shrink-0 overflow-y-auto">
         <div>
-            <h1 class="text-2xl font-black tracking-wider text-purple-400 neon-text">GRAVITY LAB</h1>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">O'z koinotingni yarat</p>
+            <h1 class="text-2xl font-black tracking-wider text-purple-400 neon-text">COSMO LIFE</h1>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-4">Hayot va halokat simulyatori</p>
 
-            <div class="space-y-6">
-                <!-- Sayyora Massasi -->
+            <div class="space-y-4">
+                <!-- 1. Jism/Asbob Tanlash -->
                 <div>
-                    <label class="text-xs text-gray-400 uppercase tracking-wider block mb-1">Yaratiladigan jism turi</label>
+                    <label class="text-[10px] text-gray-400 uppercase tracking-wider block mb-1">Amalni tanlang</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="setMassPreset('planet')" id="btn-planet" class="py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition">SAYYORA 🪐</button>
-                        <button onclick="setMassPreset('sun')" id="btn-sun" class="py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition">YULDUZ ☀️</button>
+                        <button onclick="setTool('planet')" id="tool-planet" class="active-tool py-2 px-1 bg-purple-950 bg-opacity-40 border border-purple-900 text-xs font-bold rounded-lg transition">SAYYORA 🪐</button>
+                        <button onclick="setTool('asteroid')" id="tool-asteroid" class="py-2 px-1 bg-purple-950 bg-opacity-40 border border-purple-900 text-xs font-bold rounded-lg text-gray-300 transition">ASTROID ☄️</button>
+                        <button onclick="setTool('laser')" id="tool-laser" class="py-2 px-1 bg-purple-950 bg-opacity-40 border border-purple-900 text-xs font-bold rounded-lg text-gray-300 transition">LAZER ⚡</button>
+                        <button onclick="setTool('life')" id="tool-life" class="py-2 px-1 bg-purple-950 bg-opacity-40 border border-purple-900 text-xs font-bold rounded-lg text-gray-300 transition">HAYOT BERISH 🌱</button>
                     </div>
                 </div>
 
-                <!-- Tortishish kuchi (Gravity G) -->
-                <div>
-                    <div class="flex justify-between text-xs text-gray-400 uppercase tracking-wider mb-1">
-                        <span>Gravitatsiya kuchi</span>
-                        <span id="g-val" class="text-purple-400 font-bold">0.15</span>
+                <!-- 2. Rangni Tanlash (Sayyora uchun) -->
+                <div id="color-section">
+                    <label class="text-[10px] text-gray-400 uppercase tracking-wider block mb-1">Sayyora rangi</label>
+                    <div class="flex items-center gap-2">
+                        <input type="color" id="planet-color" value="#38bdf8" class="w-10 h-8 bg-transparent border border-purple-800 rounded cursor-pointer">
+                        <span class="text-xs text-gray-400">O'z rangingizni bo'yang</span>
                     </div>
-                    <input type="range" id="gravity-slider" min="0.01" max="1" step="0.01" value="0.15" class="w-full h-1 bg-purple-950 rounded-lg appearance-none cursor-pointer accent-purple-500">
                 </div>
 
-                <!-- Sayyoralar Izlari (Trails) -->
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400 uppercase tracking-wider">Harakat izlarini ko'rsat</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="trails-toggle" checked class="sr-only peer">
-                        <div class="w-9 h-5 bg-purple-950 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
+                <!-- 3. Hayot Qo'shish Sozlamasi (Faqat Hayot Berish yoqilganda chiqadi) -->
+                <div id="life-section" class="hidden bg-purple-950 bg-opacity-20 p-2.5 rounded-lg border border-purple-900 border-opacity-40">
+                    <label class="text-[10px] text-gray-400 uppercase tracking-wider block mb-1">Yaratish</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setLifeType('human')" id="life-human" class="active-tool py-1 px-2 bg-purple-900 bg-opacity-30 border border-purple-800 text-[11px] rounded">👤 ODAMLAR</button>
+                        <button onclick="setLifeType('animal')" id="life-animal" class="py-1 px-2 bg-transparent border border-purple-900 text-[11px] rounded">🦁 HAYVONLAR</button>
+                    </div>
                 </div>
 
-                <hr class="border-purple-950">
+                <hr class="border-purple-950 my-1">
 
-                <!-- Tayyor ssenariylar (Presets) -->
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-400 uppercase tracking-wider block">Tayyor koinot tizimlari</label>
-                    <button onclick="loadPreset('solar')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
-                        <span>Quyosh va 3 ta sayyora</span> <span>🪐</span>
+                <!-- Statlar -->
+                <div class="bg-black bg-opacity-50 p-3 rounded-xl border border-purple-950 space-y-1.5">
+                    <h3 class="text-xs text-purple-400 uppercase font-bold tracking-wider">Koinot statistikasi:</h3>
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>Sayyoralar:</span> <span id="stat-planets" class="text-white">0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>Odamlar populyatsiyasi:</span> <span id="stat-humans" class="text-blue-400 font-bold">0</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>Hayvonlar populyatsiyasi:</span> <span id="stat-animals" class="text-green-400 font-bold">0</span>
+                    </div>
+                </div>
+
+                <!-- Tayyor Tizimlar -->
+                <div class="space-y-1.5">
+                    <label class="text-[10px] text-gray-400 uppercase tracking-wider block">Tayyor koinot tizimlari</label>
+                    <button onclick="loadPreset('solar')" class="w-full text-left py-1.5 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 rounded-lg text-xs transition flex justify-between">
+                        <span>Quyosh tizimi (Hayotbop)</span> <span>🪐</span>
                     </button>
-                    <button onclick="loadPreset('binary')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
-                        <span>Qo'shaloq yulduz tizimi</span> <span>☀️☀️</span>
-                    </button>
-                    <button onclick="loadPreset('chaos')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
-                        <span>Kometalar yomg'iri</span> <span>☄️</span>
+                    <button onclick="loadPreset('chaos')" class="w-full text-left py-1.5 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 rounded-lg text-xs transition flex justify-between">
+                        <span>Astroidlar xavfi</span> <span>☄️</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="mt-6 space-y-2">
-            <button onclick="clearCanvas()" class="w-full py-2.5 bg-red-950 bg-opacity-40 hover:bg-opacity-70 border border-red-900 text-xs font-bold rounded-xl transition text-red-400">
+        <div class="mt-4 space-y-2">
+            <button onclick="clearCanvas()" class="w-full py-2 bg-red-950 bg-opacity-40 hover:bg-opacity-70 border border-red-900 text-xs font-bold rounded-xl transition text-red-400">
                 FAZONI TOZALASH 🧹
             </button>
-            <p class="text-[10px] text-gray-500 text-center leading-relaxed">
-                *Sichqonchani yoki ekranni bosib, orqaga torting va qo'yib yuboring — sayyora uchib ketadi!
-            </p>
         </div>
     </div>
 
-    <!-- Canvas (Koinot maydoni) -->
+    <!-- Koinot maydoni (Canvas) -->
     <div class="flex-grow relative h-full">
         <canvas id="spaceCanvas" class="w-full h-full"></canvas>
     </div>
@@ -96,7 +111,6 @@
         const canvas = document.getElementById('spaceCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Canvas o'lchamlarini ekran bilan moslashtirish
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
@@ -104,47 +118,49 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Global o'yin holati
+        // O'yin o'zgaruvchilari
         let bodies = [];
-        let G = 0.15; // Gravitatsiya doimiysi
-        let showTrails = true;
-        let selectedMassType = 'planet'; // planet yoki sun
+        let G = 0.15; // Tortishish doimiysi
+        let activeTool = 'planet'; // planet, asteroid, laser, life
+        let selectedLifeType = 'human'; // human, animal
 
-        // Drag & Shoot (Uchirish) mexanikasi
+        // Drag & Shoot (Otish) koordinatalari
         let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let currentX = 0;
-        let currentY = 0;
+        let startX = 0, startY = 0, currentX = 0, currentY = 0;
 
-        // Ranglar palitrasi
-        const colors = {
-            planet: ['#38bdf8', '#34d399', '#fbbf24', '#f43f5e', '#a855f7'],
-            sun: '#fbbf24',
-            trail: 'rgba(168, 85, 247, 0.15)'
-        };
+        // Lazer holati
+        let isFiringLaser = false;
+        let laserX = 0, laserY = 0;
 
-        // Jism (Yulduz/Sayyora) klassi
+        // Kosmik jism klassi
         class CelestialBody {
-            constructor(x, y, vx, vy, mass, color, isStatic = false) {
+            constructor(x, y, vx, vy, mass, color, isStatic = false, type = 'planet') {
                 this.x = x;
                 this.y = y;
                 this.vx = vx;
                 this.vy = vy;
                 this.mass = mass;
-                this.radius = Math.max(4, Math.sqrt(mass) * 1.5);
                 this.color = color;
                 this.isStatic = isStatic;
+                this.type = type; // planet, asteroid, sun
+                this.radius = type === 'sun' ? 25 : Math.max(5, Math.sqrt(mass) * 1.5);
+                
+                // Hayot elementlari
+                this.humans = 0;
+                this.animals = 0;
                 this.history = [];
+                this.isDestroyed = false;
             }
 
             draw() {
-                // Izlarni (trail) chizish
-                if (showTrails && this.history.length > 1) {
+                if (this.isDestroyed) return;
+
+                // Orbitani chizish izlari (Faqat sayyoralar va astroidlar uchun)
+                if (this.history.length > 1 && this.type !== 'sun') {
                     ctx.beginPath();
                     ctx.strokeStyle = this.color;
-                    ctx.lineWidth = 0.8;
-                    ctx.globalAlpha = 0.4;
+                    ctx.lineWidth = 0.5;
+                    ctx.globalAlpha = 0.25;
                     ctx.moveTo(this.history[0].x, this.history[0].y);
                     for (let i = 1; i < this.history.length; i++) {
                         ctx.lineTo(this.history[i].x, this.history[i].y);
@@ -153,66 +169,130 @@
                     ctx.globalAlpha = 1.0;
                 }
 
-                // Glow (Neon nur) effekti
-                ctx.shadowBlur = this.radius * 1.5;
+                // Neon Glow
+                ctx.shadowBlur = this.radius * (this.type === 'sun' ? 2 : 1.2);
                 ctx.shadowColor = this.color;
 
-                // Jismning o'zini chizish
+                // Jism doirasi
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
                 ctx.fill();
-
-                // Glow effektini tozalash (boshqa elementlarga ta'sir qilmasligi uchun)
                 ctx.shadowBlur = 0;
+
+                // Sayyoradagi tiriklikni vizual ko'rsatish (Emojilar)
+                if (this.type === 'planet' && (this.humans > 0 || this.animals > 0)) {
+                    ctx.font = "11px Arial";
+                    ctx.textAlign = "center";
+                    let emojiText = "";
+                    if (this.humans > 0) emojiText += `👤${Math.floor(this.humans)}`;
+                    if (this.animals > 0) emojiText += `🦁${Math.floor(this.animals)}`;
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillText(emojiText, this.x, this.y - this.radius - 5);
+                }
             }
 
             update() {
+                if (this.isDestroyed) return;
+
                 if (!this.isStatic) {
                     this.x += this.vx;
                     this.y += this.vy;
 
-                    // Harakat tarixini saqlash (Trail uchun)
                     this.history.push({ x: this.x, y: this.y });
-                    if (this.history.length > 80) {
-                        this.history.shift();
+                    if (this.history.length > 40) this.history.shift();
+                }
+
+                // Hayot simulyatsiyasi (Ko'payish va o'lish tabiati)
+                if (this.type === 'planet') {
+                    // Sayyora Quyoshga juda yaqin borsa (Harorat juda isib ketib hayot tugaydi)
+                    let nearSun = false;
+                    bodies.forEach(b => {
+                        if (b.type === 'sun') {
+                            let dist = Math.hypot(b.x - this.x, b.y - this.y);
+                            if (dist < 120) nearSun = true; // Yonish zonasi
+                        }
+                    });
+
+                    if (nearSun) {
+                        if (this.humans > 0 || this.animals > 0) {
+                            createExplosion(this.x, this.y, '#ef4444', 8);
+                        }
+                        this.humans = 0;
+                        this.animals = 0;
+                    } else {
+                        // Sekin ko'payish tabiati (Hayot o'z-o'zidan sekin o'sadi, agar ozuqa yetarli bo'lsa)
+                        if (this.humans > 0) {
+                            this.humans += 0.02; // Aholi o'sishi
+                            // Tabiiy cheklov: sayyora sig'imi
+                            if (this.humans > this.mass * 2) this.humans = this.mass * 2;
+                        }
+                        if (this.animals > 0) {
+                            this.animals += 0.03;
+                            if (this.animals > this.mass * 3) this.animals = this.mass * 3;
+                        }
                     }
                 }
             }
         }
 
-        // Gravitasiya hisob-kitoblari (Nyuton fizikasi)
+        // Portlash zarralari (Explosion Particles) klassi
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6;
+                this.radius = Math.random() * 3 + 1;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.015;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+        }
+        let particles = [];
+
+        function createExplosion(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        // Nyuton gravitatsiyasi mantiqi
         function calculateGravity() {
             for (let i = 0; i < bodies.length; i++) {
+                if (bodies[i].isDestroyed) continue;
                 for (let j = 0; j < bodies.length; j++) {
-                    if (i === j) continue;
+                    if (i === j || bodies[j].isDestroyed) continue;
 
                     const b1 = bodies[i];
                     const b2 = bodies[j];
 
                     const dx = b2.x - b1.x;
                     const dy = b2.y - b1.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const distance = Math.hypot(dx, dy);
 
-                    // To'qnashib ketishning oldini olish va silliq harakat uchun minimal masofa
+                    // To'qnashuv mantiqi
                     if (distance < (b1.radius + b2.radius)) {
-                        // Agar judayam yaqin kelishsa, kichigi kattasiga yutiladi (qo'shiladi)
-                        if (b1.mass >= b2.mass && !b1.isStatic) {
-                            // Momentum saqlanish qonuni: m1*v1 + m2*v2 = (m1+m2)*v_yangi
-                            b1.vx = (b1.vx * b1.mass + b2.vx * b2.mass) / (b1.mass + b2.mass);
-                            b1.vy = (b1.vy * b1.mass + b2.vy * b2.mass) / (b1.mass + b2.mass);
-                            b1.mass += b2.mass;
-                            b1.radius = Math.max(4, Math.sqrt(b1.mass) * 1.5);
-                            bodies.splice(j, 1);
-                            if (j < i) i--;
-                        }
+                        handleCollision(b1, b2, i, j);
                         continue;
                     }
 
-                    // F = G * (m1 * m2) / r^2
+                    // Gravitatsiya kuchi: F = G * (m1*m2) / r^2
                     const force = (G * b1.mass * b2.mass) / (distance * distance);
-                    
-                    // Tezlanish a = F / m
                     const ax = (force * (dx / distance)) / b1.mass;
                     const ay = (force * (dy / distance)) / b1.mass;
 
@@ -222,13 +302,54 @@
             }
         }
 
-        // Asosiy Simulyatsiya Sikli
+        // To'qnashuvlar oqibatlari
+        function handleCollision(b1, b2, i, j) {
+            // Astroid sayyoraga urilsa: Hayot nobud bo'ladi, chang chiqadi
+            if ((b1.type === 'asteroid' && b2.type === 'planet') || (b2.type === 'asteroid' && b1.type === 'planet')) {
+                let planet = b1.type === 'planet' ? b1 : b2;
+                let asteroid = b1.type === 'asteroid' ? b1 : b2;
+                
+                createExplosion(asteroid.x, asteroid.y, '#f97316', 12);
+                
+                // Hayotni jazolash (Asteroid barcha hayotni o'ldiradi)
+                if (planet.humans > 0 || planet.animals > 0) {
+                    planet.humans = 0;
+                    planet.animals = 0;
+                    createExplosion(planet.x, planet.y, '#ef4444', 20); // Qizil portlash
+                }
+                
+                // Astroid parchalanadi
+                asteroid.isDestroyed = true;
+                bodies = bodies.filter(b => !b.isDestroyed);
+            } 
+            // Oddiy birlashish (Kattasi kichigini yutadi)
+            else if (b1.mass >= b2.mass && !b1.isStatic) {
+                b1.vx = (b1.vx * b1.mass + b2.vx * b2.mass) / (b1.mass + b2.mass);
+                b1.vy = (b1.vy * b1.mass + b2.vy * b2.mass) / (b1.mass + b2.mass);
+                
+                // Hayotni qo'shish
+                b1.humans += b2.humans;
+                b1.animals += b2.animals;
+
+                b1.mass += b2.mass;
+                b1.radius = b1.type === 'sun' ? 25 : Math.max(5, Math.sqrt(b1.mass) * 1.5);
+                b2.isDestroyed = true;
+                createExplosion(b2.x, b2.y, b2.color, 8);
+                bodies = bodies.filter(b => !b.isDestroyed);
+            }
+        }
+
+        // Asosiy sikl (Render & Physics loop)
         function loop() {
-            // Ekranni tozalash (lekin silliq animatsiya uchun juda xira fon bilan bo'yash)
-            ctx.fillStyle = 'rgba(3, 0, 8, 0.2)';
+            ctx.fillStyle = 'rgba(2, 0, 5, 0.25)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             calculateGravity();
+
+            // Lazer nuri otilishi
+            if (activeTool === 'laser' && isFiringLaser) {
+                drawLaserBeam();
+            }
 
             // Jismlarni yangilash va chizish
             bodies.forEach(body => {
@@ -236,102 +357,164 @@
                 body.draw();
             });
 
-            // Agar sichqoncha bilan otish trayektoriyasi chizilayotgan bo'lsa
-            if (isDragging) {
+            // Zarralarni yangilash
+            particles.forEach((p, idx) => {
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) particles.splice(idx, 1);
+            });
+
+            // Otish trayektoriyasi vizualizatsiyasi
+            if (isDragging && (activeTool === 'planet' || activeTool === 'asteroid')) {
                 ctx.beginPath();
-                ctx.strokeStyle = '#a855f7';
+                ctx.strokeStyle = activeTool === 'planet' ? '#38bdf8' : '#f97316';
                 ctx.lineWidth = 1.5;
-                ctx.setLineDash([5, 5]); // Chiziqli yo'nalish
+                ctx.setLineDash([4, 4]);
                 ctx.moveTo(startX, startY);
                 ctx.lineTo(currentX, currentY);
                 ctx.stroke();
-                ctx.setLineDash([]); // Oddiy chiziqqa qaytarish
+                ctx.setLineDash([]);
 
-                // Yaratiladigan yangi sayyoraning joylashuvini ko'rsatish
+                // Rejali jism xomakisi
                 ctx.beginPath();
-                ctx.arc(startX, startY, selectedMassType === 'sun' ? 15 : 6, 0, Math.PI * 2);
-                ctx.fillStyle = selectedMassType === 'sun' ? colors.sun : colors.planet[0];
+                ctx.arc(startX, startY, activeTool === 'planet' ? 10 : 5, 0, Math.PI * 2);
+                ctx.fillStyle = activeTool === 'planet' ? document.getElementById('planet-color').value : '#f97316';
                 ctx.fill();
             }
 
+            updateStats();
             requestAnimationFrame(loop);
         }
 
-        // Sichqoncha va Sensorli boshqaruv voqealari (Desktop & Mobile)
-        function getCoords(e) {
+        // Lazer effektini chizish va jismni yo'q qilish
+        function drawLaserBeam() {
+            ctx.beginPath();
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff0055';
+            
+            // Lazer asosi (Ekranning pastki qismidan chiqadi)
+            ctx.moveTo(canvas.width / 2, canvas.height);
+            ctx.lineTo(laserX, laserY);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Uchqunlar
+            createExplosion(laserX, laserY, '#ff0055', 2);
+
+            // Tegishni aniqlash
+            bodies.forEach((b, idx) => {
+                let dist = Math.hypot(b.x - laserX, b.y - laserY);
+                if (dist < b.radius + 15 && b.type !== 'sun') {
+                    createExplosion(b.x, b.y, b.color, 25);
+                    b.isDestroyed = true;
+                }
+            });
+            bodies = bodies.filter(b => !b.isDestroyed);
+        }
+
+        // Sichqoncha bosilganda
+        canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
-        }
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
 
-        function onStart(e) {
-            isDragging = true;
-            const coords = getCoords(e);
-            startX = coords.x;
-            startY = coords.y;
-            currentX = coords.x;
-            currentY = coords.y;
-        }
-
-        function onMove(e) {
-            if (!isDragging) return;
-            const coords = getCoords(e);
-            currentX = coords.x;
-            currentY = coords.y;
-        }
-
-        function onEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-
-            // Tezlik vektori: Tortilgan masofaning teskari yo'nalishiga qarab otiladi
-            // 0.04 - sezgirlik koeffitsiyenti
-            const vx = (startX - currentX) * 0.04;
-            const vy = (startY - currentY) * 0.04;
-
-            const mass = selectedMassType === 'sun' ? 300 : 15;
-            const color = selectedMassType === 'sun' ? colors.sun : colors.planet[Math.floor(Math.random() * colors.planet.length)];
-            const isStatic = selectedMassType === 'sun'; // Yulduzlar harakatsiz turadi
-
-            bodies.push(new CelestialBody(startX, startY, vx, vy, mass, color, isStatic));
-        }
-
-        canvas.addEventListener('mousedown', onStart);
-        canvas.addEventListener('mousemove', onMove);
-        window.addEventListener('mouseup', onEnd);
-
-        canvas.addEventListener('touchstart', onStart, { passive: true });
-        canvas.addEventListener('touchmove', onMove, { passive: true });
-        window.addEventListener('touchend', onEnd);
-
-        // Boshqaruv sozlamalari interfeysi bilan ishlash
-        const gravitySlider = document.getElementById('gravity-slider');
-        const gVal = document.getElementById('g-val');
-        gravitySlider.addEventListener('input', (e) => {
-            G = parseFloat(e.target.value);
-            gVal.innerText = G;
-        });
-
-        const trailsToggle = document.getElementById('trails-toggle');
-        trailsToggle.addEventListener('change', (e) => {
-            showTrails = e.target.checked;
-            if (!showTrails) {
-                bodies.forEach(b => b.history = []);
+            if (activeTool === 'laser') {
+                isFiringLaser = true;
+                laserX = mouseX;
+                laserY = mouseY;
+            } else if (activeTool === 'life') {
+                // Eng yaqin sayyorani topish va hayot joylashtirish
+                bodies.forEach(b => {
+                    let dist = Math.hypot(b.x - mouseX, b.y - mouseY);
+                    if (dist < b.radius + 15 && b.type === 'planet') {
+                        if (selectedLifeType === 'human') {
+                            b.humans += 5;
+                        } else {
+                            b.animals += 5;
+                        }
+                        createExplosion(b.x, b.y, selectedLifeType === 'human' ? '#60a5fa' : '#4ade80', 5);
+                    }
+                });
+            } else {
+                isDragging = true;
+                startX = mouseX;
+                startY = mouseY;
+                currentX = mouseX;
+                currentY = mouseY;
             }
         });
 
-        function setMassPreset(type) {
-            selectedMassType = type;
-            document.getElementById('btn-planet').className = type === 'planet' ? 'py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition' : 'py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition';
-            document.getElementById('btn-sun').className = type === 'sun' ? 'py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition' : 'py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition';
+        // Sichqoncha sudrab borilganda
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (isDragging) {
+                currentX = mouseX;
+                currentY = mouseY;
+            }
+            if (activeTool === 'laser' && isFiringLaser) {
+                laserX = mouseX;
+                laserY = mouseY;
+            }
+        });
+
+        // Sichqoncha qo'yib yuborilganda
+        window.addEventListener('mouseup', () => {
+            isFiringLaser = false;
+            if (!isDragging) return;
+            isDragging = false;
+
+            const vx = (startX - currentX) * 0.04;
+            const vy = (startY - currentY) * 0.04;
+
+            if (activeTool === 'planet') {
+                const color = document.getElementById('planet-color').value;
+                bodies.push(new CelestialBody(startX, startY, vx, vy, 15, color, false, 'planet'));
+            } else if (activeTool === 'asteroid') {
+                bodies.push(new CelestialBody(startX, startY, vx, vy, 4, '#a1a1aa', false, 'asteroid'));
+            }
+        });
+
+        // Uskunani o'zgartirish (Sayyora, Astroid, Lazer, Hayot)
+        function setTool(tool) {
+            activeTool = tool;
+            document.querySelectorAll('[id^="tool-"]').forEach(btn => btn.classList.remove('active-tool'));
+            document.getElementById(`tool-${tool}`).classList.add('active-tool');
+
+            // Rang tanlash yoki hayot bo'limlarini ko'rsatish
+            document.getElementById('color-section').style.display = tool === 'planet' ? 'block' : 'none';
+            document.getElementById('life-section').style.display = tool === 'life' ? 'block' : 'none';
+        }
+
+        // Hayot turini tanlash
+        function setLifeType(type) {
+            selectedLifeType = type;
+            document.querySelectorAll('[id^="life-"]').forEach(btn => btn.classList.remove('active-tool'));
+            document.getElementById(`life-${type}`).classList.add('active-tool');
+        }
+
+        // Statistikani yangilab turish
+        function updateStats() {
+            let planets = 0, humans = 0, animals = 0;
+            bodies.forEach(b => {
+                if (b.type === 'planet') {
+                    planets++;
+                    humans += b.humans;
+                    animals += b.animals;
+                }
+            });
+            document.getElementById('stat-planets').innerText = planets;
+            document.getElementById('stat-humans').innerText = Math.floor(humans);
+            document.getElementById('stat-animals').innerText = Math.floor(animals);
         }
 
         function clearCanvas() {
             bodies = [];
+            particles = [];
         }
 
         // Tayyor koinot ssenariylari
@@ -341,39 +524,33 @@
             const cy = canvas.height / 2;
 
             if (presetName === 'solar') {
-                // Markazda Quyosh
-                bodies.push(new CelestialBody(cx, cy, 0, 0, 400, colors.sun, true));
-                // 3 ta turli masofadagi barqaror aylanuvchi sayyoralar
-                // Orbita tezligi v = sqrt(G * M / r) formulasi asosida taxminan olingan
-                bodies.push(new CelestialBody(cx, cy - 100, 0.8, 0, 10, '#38bdf8'));
-                bodies.push(new CelestialBody(cx, cy - 160, 0.6, 0, 15, '#34d399'));
-                bodies.push(new CelestialBody(cx, cy - 220, 0.5, 0, 20, '#fbbf24'));
-            } 
-            else if (presetName === 'binary') {
-                // Bir-biri atrofida aylanadigan 2 ta yorqin yulduz
-                bodies.push(new CelestialBody(cx - 100, cy, 0, 0.45, 300, '#fbbf24'));
-                bodies.push(new CelestialBody(cx + 100, cy, 0, -0.45, 300, '#a855f7'));
-            } 
-            else if (presetName === 'chaos') {
-                // Bitta katta Quyosh va unga juda ko'p mayda kometalar
-                bodies.push(new CelestialBody(cx, cy, 0, 0, 500, colors.sun, true));
-                for(let i = 0; i < 25; i++) {
-                    const radius = 100 + Math.random() * 150;
-                    const angle = Math.random() * Math.PI * 2;
-                    const x = cx + Math.cos(angle) * radius;
-                    const y = cy + Math.sin(angle) * radius;
-                    
-                    // Quyoshga perpendikulyar tezlik berish (aylana bo'ylab harakatlanishi uchun)
-                    const speed = 0.5 + Math.random() * 0.4;
-                    const vx = -Math.sin(angle) * speed;
-                    const vy = Math.cos(angle) * speed;
-                    
-                    bodies.push(new CelestialBody(x, y, vx, vy, 2 + Math.random() * 3, colors.planet[Math.floor(Math.random() * colors.planet.length)]));
+                // O'rtada issiq Quyosh
+                bodies.push(new CelestialBody(cx, cy, 0, 0, 500, '#eab308', true, 'sun'));
+                
+                // Hayotbop Yashil sayyora (Hayvon va Odamlari bor)
+                let Earth = new CelestialBody(cx, cy - 140, 0.72, 0, 20, '#22c55e', false, 'planet');
+                Earth.humans = 10;
+                Earth.animals = 15;
+                bodies.push(Earth);
+
+                // Muzli sayyora (Uzoqroqda)
+                bodies.push(new CelestialBody(cx, cy - 220, 0.58, 0, 15, '#38bdf8', false, 'planet'));
+            } else if (presetName === 'chaos') {
+                // Quyosh
+                bodies.push(new CelestialBody(cx, cy, 0, 0, 500, '#eab308', true, 'sun'));
+                // Bitta katta sayyora
+                let jup = new CelestialBody(cx, cy - 150, 0.65, 0, 40, '#a855f7', false, 'planet');
+                jup.humans = 5;
+                bodies.push(jup);
+
+                // Atrofdan kelayotgan xavfli astroidlar
+                for(let i = 0; i < 6; i++) {
+                    bodies.push(new CelestialBody(cx - 250 + i*80, cy - 250, 0.3, 0.4, 4, '#a1a1aa', false, 'asteroid'));
                 }
             }
         }
 
-        // Dasturni boshlash
+        // Birinchi marta ishga tushirish
         loadPreset('solar');
         loop();
     </script>
