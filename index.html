@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Smash Ultra - Photo Realistic 3D</title>
+    <title>Solar Smash Ultra - Ultimate Realism 3D</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: #020204;
+            background-color: #010103;
         }
         .orbitron-font {
             font-family: 'Orbitron', sans-serif;
@@ -19,24 +19,36 @@
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col justify-between items-center text-white select-none relative">
 
-    <!-- Kosmik chuqurlik foni -->
-    <div class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none z-0" style="background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');"></div>
+    <!-- Kosmik fon -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-25 pointer-events-none z-0" style="background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');"></div>
 
-    <!-- TEPADA: Boshqaruv elementlari -->
-    <div class="z-10 mt-6 flex items-center gap-4 bg-black bg-opacity-80 px-6 py-2 rounded-full border border-gray-800 backdrop-blur-md">
-        <button onclick="resetPlanet()" class="hover:text-blue-400 transition text-lg px-2" title="Qayta tiklash"><i class="fa-solid fa-rotate-right"></i></button>
-        <div class="h-5 w-[1px] bg-gray-700"></div>
-        <button onclick="togglePause()" id="pause-btn" class="hover:text-yellow-400 transition text-lg px-2" title="Pauza"><i class="fa-solid fa-pause"></i></button>
+    <!-- TEPADA: Boshqaruv elementlari va Rejimlar -->
+    <div class="z-10 mt-6 flex flex-col items-center gap-3">
+        <div class="flex items-center gap-4 bg-black bg-opacity-80 px-6 py-2 rounded-full border border-gray-800 backdrop-blur-md">
+            <button onclick="resetPlanet()" class="hover:text-blue-400 transition text-lg px-2" title="Qayta tiklash"><i class="fa-solid fa-rotate-right"></i></button>
+            <div class="h-5 w-[1px] bg-gray-700"></div>
+            <button onclick="togglePause()" id="pause-btn" class="hover:text-yellow-400 transition text-lg px-2" title="Pauza"><i class="fa-solid fa-pause"></i></button>
+        </div>
+
+        <!-- REJIMNI TANLASH (Hujum yoki Aylantirish) -->
+        <div class="flex bg-gray-950 p-1 rounded-xl border border-gray-800">
+            <button id="mode-attack" onclick="setInteractionMode('attack')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-red-600 text-white">
+                <i class="fa-solid fa-crosshairs mr-1"></i> HUJUM REJIMI
+            </button>
+            <button id="mode-rotate" onclick="setInteractionMode('rotate')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white">
+                <i class="fa-solid fa-earth-americas mr-1"></i> AYLANTRISH 🔄
+            </button>
+        </div>
     </div>
 
-    <!-- ASOSIY: Haqiqiy 3D Simulyator maydoni -->
+    <!-- ASOSIY: Simulyator Maydoni -->
     <div class="flex-grow flex items-center justify-center w-full relative z-10">
-        <!-- Atmosfera nuri uchun orqa fon glow -->
-        <div id="atmos-glow" class="absolute rounded-full pointer-events-none transition-all duration-300" style="width: 440px; height: 440px; background: radial-gradient(circle, rgba(59,130,246,0.3) 60%, rgba(244,63,94,0.1) 80%, rgba(0,0,0,0) 100%); filter: blur(8px);"></div>
+        <!-- Atmosfera glow (Sariq chiziqsiz, o'ta silliq ko'k nurlanish) -->
+        <div id="atmos-glow" class="absolute rounded-full pointer-events-none" style="width: 430px; height: 430px; background: radial-gradient(circle, rgba(59,130,246,0.25) 65%, rgba(59,130,246,0) 80%); filter: blur(6px);"></div>
         <canvas id="renderCanvas" class="cursor-crosshair relative z-10"></canvas>
     </div>
 
-    <!-- PASTDA: Realistik Statistika Paneli -->
+    <!-- PASTDA: Statistika -->
     <div class="z-10 mb-8 flex items-center gap-12 bg-black bg-opacity-90 px-10 py-4 rounded-2xl border border-gray-800 backdrop-blur-lg">
         <div class="flex items-center gap-4">
             <span class="text-blue-400 text-3xl"><i class="fa-solid fa-users"></i></span>
@@ -55,20 +67,34 @@
         </div>
     </div>
 
-    <!-- O'NG TOMON: Qurollar -->
+    <!-- O'NG TOMON: Ko'p sonli va yuqori darajada animatsiyali qurollar -->
     <div class="absolute right-6 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3 bg-black bg-opacity-80 p-3 rounded-2xl border border-gray-800">
-        <p class="text-[9px] text-gray-500 uppercase tracking-widest text-center font-bold mb-1">Qurollar</p>
-        <button onclick="setWeapon('laser')" id="w-laser" class="w-12 h-12 bg-gray-950 border-2 border-pink-500 rounded-xl transition flex items-center justify-center text-xl text-pink-500"><i class="fa-solid fa-bolt"></i></button>
-        <button onclick="setWeapon('nuke')" id="w-nuke" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-red-500 rounded-xl transition flex items-center justify-center text-xl text-red-500"><i class="fa-solid fa-radiation"></i></button>
-        <button onclick="setWeapon('meteor')" id="w-meteor" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500"><i class="fa-solid fa-meteor"></i></button>
-        <button onclick="setWeapon('freeze')" id="w-freeze" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-cyan-400 rounded-xl transition flex items-center justify-center text-xl text-cyan-400"><i class="fa-regular fa-snowflake"></i></button>
+        <p class="text-[9px] text-gray-500 uppercase tracking-widest text-center font-bold mb-1">Arsenal</p>
+        
+        <!-- 1. Pushti lazer -->
+        <button onclick="setWeapon('laser')" id="w-laser" class="w-12 h-12 bg-gray-950 border-2 border-pink-500 rounded-xl transition flex items-center justify-center text-xl text-pink-500 hover:scale-105" title="⚡ Pushti lazer"><i class="fa-solid fa-bolt"></i></button>
+        
+        <!-- 2. Kosmik raketa -->
+        <button onclick="setWeapon('nuke')" id="w-nuke" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-red-500 rounded-xl transition flex items-center justify-center text-xl text-red-500 hover:scale-105" title="🚀 Yadroviy Raketa"><i class="fa-solid fa-rocket"></i></button>
+        
+        <!-- 3. Asteroid -->
+        <button onclick="setWeapon('meteor')" id="w-meteor" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105" title="☄️ Meteorit"><i class="fa-solid fa-meteor"></i></button>
+        
+        <!-- 4. Muz blizzard -->
+        <button onclick="setWeapon('freeze')" id="w-freeze" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-cyan-400 rounded-xl transition flex items-center justify-center text-xl text-cyan-400 hover:scale-105" title="❄️ Blizzard"><i class="fa-regular fa-snowflake"></i></button>
+
+        <!-- 5. Qora tuynuk -->
+        <button onclick="setWeapon('blackhole')" id="w-blackhole" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-purple-500 rounded-xl transition flex items-center justify-center text-xl text-purple-500 hover:scale-105" title="🌀 Qora tuynuk"><i class="fa-solid fa-circle-notch animate-spin"></i></button>
+
+        <!-- 6. Plazma to'pi -->
+        <button onclick="setWeapon('plasma')" id="w-plasma" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-green-500 rounded-xl transition flex items-center justify-center text-xl text-green-500 hover:scale-105" title="🟢 Plazma to'pi"><i class="fa-solid fa-atom"></i></button>
     </div>
 
     <script>
         const canvas = document.getElementById('renderCanvas');
         const ctx = canvas.getContext('2d');
 
-        const R_SIZE = 400; // Sfera o'lchami
+        const R_SIZE = 400; 
         canvas.width = R_SIZE;
         canvas.height = R_SIZE;
 
@@ -79,18 +105,22 @@
         let totalPopulation = 7289000000;
         let casualties = 0;
         let isPaused = false;
-        let rotation = 0;
+        
+        let rotationX = 0; // Gorizontal aylanish (lon)
+        let rotationY = 0; // Vertikal aylanish (lat)
 
         let activeWeapon = 'laser';
-        let isDrawing = false;
+        let interactionMode = 'attack'; // 'attack' yoki 'rotate'
+        let isInteracting = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
 
-        // 3D yorug'lik yo'nalishi (Quyosh o'ng tomondan tushmoqda)
-        const lightDir = { x: 0.8, y: -0.2, z: 0.5 };
-        // Normalizatsiya
+        // 3D yorug'lik yo'nalishi (faqat orqa-o'ngdan yumshoq soya tushishi uchun)
+        const lightDir = { x: 0.8, y: -0.1, z: 0.6 };
         const mag = Math.hypot(lightDir.x, lightDir.y, lightDir.z);
         lightDir.x /= mag; lightDir.y /= mag; lightDir.z /= mag;
 
-        // Xaritani procedur ravishda yuqori aniqlikda yaratish (Quruqlik + Shahar chiroqlari)
+        // Xaritani procedur ravishda yaratish
         const mapW = 1024;
         const mapH = 512;
         const mapCanvas = document.createElement('canvas');
@@ -98,35 +128,30 @@
         mapCanvas.height = mapH;
         const mctx = mapCanvas.getContext('2d');
 
-        // Shikastlanish xaritasi (Sayyoradagi teshiklar, magma va muzlar uchun alohida qatlam)
+        // Shikastlanish xaritasi
         const damageCanvas = document.createElement('canvas');
         damageCanvas.width = mapW;
         damageCanvas.height = mapH;
         const dctx = damageCanvas.getContext('2d');
 
         function generateDetailedEarth() {
-            // Okean fondi
-            mctx.fillStyle = '#051830';
+            mctx.fillStyle = '#06152d'; // Okean
             mctx.fillRect(0, 0, mapW, mapH);
 
-            // Murakkab quruqliklar zanjiri (Yevrosiyo, Afrika, Amerika)
-            mctx.fillStyle = '#14421b'; // To'q yashil quruqlik
-            
-            // Dunyo xaritasi shaklini eslatuvchi relyeflarni chizish
-            drawContinent(480, 200, 320, 180, 0.4); // Yevrosiyo
-            drawContinent(420, 320, 140, 160, 0.5); // Afrika
-            drawContinent(180, 200, 160, 140, 0.4); // Shimoliy Amerika
-            drawContinent(240, 360, 110, 150, 0.45); // Janubiy Amerika
-            drawContinent(850, 380, 100, 70, 0.3); // Avstraliya
+            mctx.fillStyle = '#113f18'; // Quruqlik
+            drawContinent(480, 200, 340, 200, 0.4); // Yevrosiyo
+            drawContinent(420, 340, 160, 180, 0.5); // Afrika
+            drawContinent(180, 200, 170, 150, 0.4); // Shimoliy Amerika
+            drawContinent(240, 380, 120, 160, 0.45); // Janubiy Amerika
+            drawContinent(850, 390, 110, 80, 0.3); // Avstraliya
 
-            // Shahar chiroqlari qatlamini quruqlikka qo'shish (Sariq-oltin miltillashlar)
-            mctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
-            for (let i = 0; i < 450; i++) {
+            // Shahar chiroqlari (Tungi yarimsharda miltillashi uchun)
+            mctx.fillStyle = 'rgba(255, 225, 100, 0.9)';
+            for (let i = 0; i < 500; i++) {
                 let rx = Math.random() * mapW;
                 let ry = Math.random() * mapH;
-                // Faqat quruqlik ustida chiroq yoqish
                 let pixel = mctx.getImageData(rx, ry, 1, 1).data;
-                if (pixel[1] > 40 && pixel[0] < 50) { 
+                if (pixel[1] > 30 && pixel[0] < 50) { 
                     mctx.fillRect(rx, ry, Math.random()*2+1, Math.random()*2+1);
                 }
             }
@@ -149,8 +174,55 @@
 
         generateDetailedEarth();
 
-        // Kosmik parchalar va otilayotgan lavalar uchun zarrachalar tizimi
+        // Kuchli uchuvchi animatsiyalar ro'yxati (Meteorlar, raketalar, qora tuynuklar)
+        let projectiles = [];
         let particles = [];
+
+        class Projectile {
+            constructor(startX, startY, targetX, targetY, type) {
+                this.startX = startX; this.startY = startY;
+                this.x = startX; this.y = startY;
+                this.targetX = targetX; this.targetY = targetY;
+                this.type = type;
+                this.progress = 0;
+                this.speed = type === 'nuke' ? 0.03 : 0.04;
+            }
+            update() {
+                this.progress += this.speed;
+                this.x = this.startX + (this.targetX - this.startX) * this.progress;
+                this.y = this.startY + (this.targetY - this.startY) * this.progress;
+
+                // Quyruq qismi animatsiyasi
+                const tailColor = this.type === 'nuke' ? '#f43f5e' : '#f59e0b';
+                particles.push(new Debris(this.x, this.y, (Math.random() - 0.5) * 1, (Math.random() - 0.5) * 1, tailColor, Math.random() * 3 + 1));
+
+                if (this.progress >= 1) {
+                    // Sayyoraga urildi!
+                    triggerImpact(this.targetX, this.targetY, this.type);
+                    return false; // o'chirish
+                }
+                return true;
+            }
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 15;
+                if (this.type === 'nuke') {
+                    ctx.shadowColor = '#f43f5e';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (this.type === 'meteor') {
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.fillStyle = '#ea580c';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
         class Debris {
             constructor(x, y, vx, vy, color, size) {
                 this.x = x; this.y = y;
@@ -158,18 +230,17 @@
                 this.color = color;
                 this.size = size;
                 this.life = 1.0;
-                this.decay = 0.02 + Math.random() * 0.02;
+                this.decay = 0.015 + Math.random() * 0.02;
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.05; // Gravitatsiya ta'siri
                 this.life -= this.decay;
             }
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.life;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = this.size * 2;
                 ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
@@ -179,7 +250,7 @@
             }
         }
 
-        // 3D Sfera Rendereri (Per-pixel ray casting va realistik soya modeli)
+        // 3D Sfera Renderer
         const screenImg = ctx.createImageData(R_SIZE, R_SIZE);
         const mapData = mctx.getImageData(0, 0, mapW, mapH);
         
@@ -189,98 +260,77 @@
             for (let y = 0; y < R_SIZE; y++) {
                 for (let x = 0; x < R_SIZE; x++) {
                     const idx = (y * R_SIZE + x) * 4;
-                    
-                    // Sfera koordinatalari
                     const dx = x - cx;
                     const dy = y - cy;
                     const r2 = dx * dx + dy * dy;
                     
                     if (r2 <= radius * radius) {
                         const z = Math.sqrt(radius * radius - r2);
-                        
-                        // Normal vektor (3D yuza yo'nalishi)
                         const nx = dx / radius;
                         const ny = dy / radius;
                         const nz = z / radius;
                         
-                        // 3D Sferik xarita proyeksiyasi (Mercator projection)
-                        const lat = Math.asin(ny);
-                        const lon = Math.atan2(nx, nz) + rotation;
+                        // Rotatsiya koordinatalari
+                        const ry = ny * Math.cos(rotationY) - nz * Math.sin(rotationY);
+                        const rz1 = ny * Math.sin(rotationY) + nz * Math.cos(rotationY);
+                        const rx = nx * Math.cos(rotationX) - rz1 * Math.sin(rotationX);
+                        const rz = nx * Math.sin(rotationX) + rz1 * Math.cos(rotationX);
+
+                        const lat = Math.asin(ry);
+                        const lon = Math.atan2(rx, rz);
                         
-                        // Tekstura koordinatalari
                         let u = Math.floor(((lon + Math.PI) / (Math.PI * 2)) * mapW);
                         let v = Math.floor(((lat + Math.PI / 2) / Math.PI) * mapH);
                         
-                        // Xaritadan chetga chiqib ketmaslik
                         u = (u % mapW + mapW) % mapW;
                         v = Math.max(0, Math.min(mapH - 1, v));
                         
                         const mapIdx = (v * mapW + u) * 4;
                         const dmgIdx = (v * mapW + u) * 4;
                         
-                        // Asosiy yer ranglari
                         let r = mapData.data[mapIdx];
                         let g = mapData.data[mapIdx + 1];
                         let b = mapData.data[mapIdx + 2];
                         
-                        // Kun va Tun soyasi (Lambertian lighting)
                         const dot = nx * lightDir.x + ny * lightDir.y + nz * lightDir.z;
+                        const dmgType = dData.data[dmgIdx + 3];
                         
-                        // Shikastlanish/Magma/Muz effektlarini hisoblash
-                        const dmgType = dData.data[dmgIdx + 3]; // Alpha kanalda zarar turi yoziladi
                         if (dmgType > 0) {
-                            const intens = dData.data[dmgIdx]; // Qizillik darajasi (Magma)
-                            const blueIntens = dData.data[dmgIdx + 2]; // Ko'klik darajasi (Muz)
+                            const intens = dData.data[dmgIdx];
+                            const blueIntens = dData.data[dmgIdx + 2];
                             
                             if (blueIntens > 200) {
-                                // Muzlash effekti
-                                r = 150; g = 230; b = 255;
+                                r = 130; g = 220; b = 255; // Muzlagan joylar
                             } else if (intens > 50) {
-                                // Qaynoq magma (Rasmda o'rtada yonib turgan qizil olovli magma)
-                                // Animatsiya miltillashi uchun sinus qo'shildi
-                                const pulse = 1.0 + Math.sin(Date.now() * 0.01 + u) * 0.15;
-                                r = Math.min(255, 240 * pulse);
-                                g = Math.min(255, (100 + intens / 2) * pulse);
-                                b = 30;
+                                const pulse = 1.0 + Math.sin(Date.now() * 0.015 + u) * 0.2;
+                                r = Math.min(255, 250 * pulse);
+                                g = Math.min(255, (110 + intens / 2) * pulse);
+                                b = 30; // Haqiqiy qaynab turgan magma ko'rinishi
                             } else {
-                                // Kuygan qora krater chetlari
-                                r = 10; g = 8; b = 10;
+                                r = 8; g = 6; b = 8; // Kuyib ko'mir bo'lgan krater
                             }
                         }
 
-                        // Yorug'lik hisoblash
+                        // Silliq va yumshoq soyalash (o'rtadagi keskin sariq chiziqlar butkul olib tashlandi)
                         if (dot >= 0) {
-                            // Kun tomoni (3D soya bilan)
-                            const factor = 0.15 + dot * 0.85;
+                            const factor = 0.1 + dot * 0.9;
                             screenImg.data[idx] = r * factor;
                             screenImg.data[idx + 1] = g * factor;
                             screenImg.data[idx + 2] = b * factor;
                         } else {
-                            // Tun tomoni (Oltin rangli shahar chiroqlari faqat shu tomonda porlaydi!)
                             const isCityLight = (r > 200 && g > 170 && b < 100);
-                            const terminatorGlow = Math.abs(dot); // Kun va tun chegarasi
-                            
                             if (isCityLight && dmgType === 0) {
-                                // Shahar chiroqlari tunda yorqin ko'rinadi
                                 screenImg.data[idx] = 255;
-                                screenImg.data[idx + 1] = 210;
+                                screenImg.data[idx + 1] = 200;
                                 screenImg.data[idx + 2] = 50;
-                            } else if (terminatorGlow < 0.2 && dmgType === 0) {
-                                // Realistik qizil shafaq atmosferasi (terminator liniyasi)
-                                const shafaq = (1.0 - terminatorGlow / 0.2);
-                                screenImg.data[idx] = r * 0.15 + 180 * shafaq;
-                                screenImg.data[idx + 1] = g * 0.15 + 50 * shafaq;
-                                screenImg.data[idx + 2] = b * 0.15;
                             } else {
-                                // To'liq qorong'ulik
-                                screenImg.data[idx] = r * 0.05;
-                                screenImg.data[idx + 1] = g * 0.05;
-                                screenImg.data[idx + 2] = b * 0.05;
+                                screenImg.data[idx] = r * 0.04;
+                                screenImg.data[idx + 1] = g * 0.04;
+                                screenImg.data[idx + 2] = b * 0.04;
                             }
                         }
                         screenImg.data[idx + 3] = 255;
                     } else {
-                        // Koinot (shaffof fon)
                         screenImg.data[idx + 3] = 0;
                     }
                 }
@@ -288,112 +338,196 @@
             ctx.putImageData(screenImg, 0, 0);
         }
 
-        // Qurol hujumi funksiyasi
+        // Qurol tanlash va hujum boshlash
+        let laserLines = [];
         function attack(canvasX, canvasY) {
             const dx = canvasX - cx;
             const dy = canvasY - cy;
             const dist = Math.hypot(dx, dy);
 
             if (dist < radius) {
-                // Sferik proyeksiyaga o'tkazish
-                const z = Math.sqrt(radius * radius - dist * dist);
-                const lat = Math.asin(dy / radius);
-                const lon = Math.atan2(dx, z) + rotation;
-
-                let u = Math.floor(((lon + Math.PI) / (Math.PI * 2)) * mapW);
-                let v = Math.floor(((lat + Math.PI / 2) / Math.PI) * mapH);
-                u = (u % mapW + mapW) % mapW;
-
-                let kill = 0;
-                let craterR = 12;
-
-                // Har xil qurollar uchun maxsus vizual portlashlar
                 if (activeWeapon === 'laser') {
-                    craterR = 14;
-                    kill = Math.floor(Math.random() * 20000000) + 5000000;
-                    // Lazer teshigi (Pushti qaynoq lava zaryadi)
-                    drawOnDamageMap(u, v, craterR, 'laser');
-                    createExplosionEffect(canvasX, canvasY, '#ec4899', 6);
+                    laserLines.push({ x: canvasX, y: canvasY });
+                    triggerImpact(canvasX, canvasY, 'laser');
                 } 
                 else if (activeWeapon === 'nuke') {
-                    craterR = 38;
-                    kill = Math.floor(Math.random() * 450000000) + 200000000;
-                    drawOnDamageMap(u, v, craterR, 'nuke');
-                    createExplosionEffect(canvasX, canvasY, '#ff3b00', 30);
+                    // Kosmosdan uchib keluvchi raketa animatsiyasi
+                    projectiles.push(new Projectile(canvasX - 120, 0, canvasX, canvasY, 'nuke'));
                 } 
                 else if (activeWeapon === 'meteor') {
-                    craterR = 25;
-                    kill = Math.floor(Math.random() * 120000000) + 40000000;
-                    drawOnDamageMap(u, v, craterR, 'meteor');
-                    createExplosionEffect(canvasX, canvasY, '#eab308', 18);
+                    // Olovli meteor tushishi
+                    projectiles.push(new Projectile(canvasX + 150, 0, canvasX, canvasY, 'meteor'));
                 } 
                 else if (activeWeapon === 'freeze') {
-                    craterR = 30;
-                    kill = Math.floor(Math.random() * 15000000) + 2000000;
-                    drawOnDamageMap(u, v, craterR, 'freeze');
-                    createExplosionEffect(canvasX, canvasY, '#22d3ee', 12);
+                    triggerImpact(canvasX, canvasY, 'freeze');
                 }
-
-                if (totalPopulation > 0) {
-                    casualties += Math.min(totalPopulation, kill);
-                    totalPopulation = Math.max(0, totalPopulation - kill);
-                    updateStats();
+                else if (activeWeapon === 'blackhole') {
+                    triggerImpact(canvasX, canvasY, 'blackhole');
+                }
+                else if (activeWeapon === 'plasma') {
+                    triggerImpact(canvasX, canvasY, 'plasma');
                 }
             }
         }
 
-        // Damage xaritasiga 2D chizish (Aylanish bilan uyg'unlashadi)
-        function drawOnDamageMap(u, v, r, type) {
+        // Haqiqiy urilish va shikast xaritasi o'zgarishi
+        function triggerImpact(canvasX, canvasY, type) {
+            const dx = canvasX - cx;
+            const dy = canvasY - cy;
+            const z = Math.sqrt(radius * radius - dx * dx - dy * dy);
+
+            // Koordinatalarni aylanish burchaklariga qarab teksturaga moslash
+            const ry = (dy / radius) * Math.cos(-rotationY) - (z / radius) * Math.sin(-rotationY);
+            const rz1 = (dy / radius) * Math.sin(-rotationY) + (z / radius) * Math.cos(-rotationY);
+            const rx = (dx / radius) * Math.cos(-rotationX) - rz1 * Math.sin(-rotationX);
+            const rz = (dx / radius) * Math.sin(-rotationX) + rz1 * Math.cos(-rotationX);
+
+            const lat = Math.asin(ry);
+            const lon = Math.atan2(rx, rz);
+
+            let u = Math.floor(((lon + Math.PI) / (Math.PI * 2)) * mapW);
+            let v = Math.floor(((lat + Math.PI / 2) / Math.PI) * mapH);
+            u = (u % mapW + mapW) % mapW;
+
+            let r = 12;
+            let kill = 0;
+
+            if (type === 'laser') {
+                r = 15;
+                kill = Math.floor(Math.random() * 25000000) + 10000000;
+                drawOnDamageMap(u, v, r, 'heat');
+                createExplosion(canvasX, canvasY, '#ec4899', 5);
+            } 
+            else if (type === 'nuke') {
+                r = 45;
+                kill = Math.floor(Math.random() * 500000000) + 250000000;
+                drawOnDamageMap(u, v, r, 'heat');
+                createExplosion(canvasX, canvasY, '#f43f5e', 45);
+            } 
+            else if (type === 'meteor') {
+                r = 30;
+                kill = Math.floor(Math.random() * 180000000) + 70000000;
+                drawOnDamageMap(u, v, r, 'heat');
+                createExplosion(canvasX, canvasY, '#eab308', 25);
+            } 
+            else if (type === 'freeze') {
+                r = 35;
+                kill = Math.floor(Math.random() * 20000000) + 5000000;
+                drawOnDamageMap(u, v, r, 'freeze');
+                createExplosion(canvasX, canvasY, '#22d3ee', 15);
+            }
+            else if (type === 'blackhole') {
+                r = 50;
+                kill = Math.floor(Math.random() * 800000000) + 400000000;
+                drawOnDamageMap(u, v, r, 'heat');
+                createExplosion(canvasX, canvasY, '#a855f7', 40);
+            }
+            else if (type === 'plasma') {
+                r = 25;
+                kill = Math.floor(Math.random() * 100000000) + 30000000;
+                drawOnDamageMap(u, v, r, 'plasma');
+                createExplosion(canvasX, canvasY, '#22c55e', 20);
+            }
+
+            if (totalPopulation > 0) {
+                casualties += Math.min(totalPopulation, kill);
+                totalPopulation = Math.max(0, totalPopulation - kill);
+                updateStats();
+            }
+        }
+
+        function drawOnDamageMap(u, v, r, mode) {
             dctx.save();
-            if (type === 'freeze') {
-                // Muzlash effekti
-                const grad = dctx.createRadialGradient(u, v, 2, u, v, r);
+            if (mode === 'freeze') {
+                const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
                 grad.addColorStop(0, 'rgba(150, 240, 255, 1)');
                 grad.addColorStop(0.7, 'rgba(34, 211, 238, 0.9)');
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
-                dctx.beginPath();
-                dctx.arc(u, v, r, 0, Math.PI * 2);
-                dctx.fill();
-            } else {
-                // Magma va Yadro kuyishi (Rasmda markazda ko'ringan lava effekti)
+                dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
+            } else if (mode === 'plasma') {
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(255, 150, 0, 1)'); // Qaynoq magma markazi
-                grad.addColorStop(0.5, 'rgba(255, 40, 0, 0.85)');
-                grad.addColorStop(0.8, 'rgba(10, 5, 5, 0.95)'); // Kuygan chetlar
-                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                grad.addColorStop(0, 'rgba(34, 197, 94, 1)');
+                grad.addColorStop(0.6, 'rgba(20, 83, 45, 0.8)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                dctx.fillStyle = grad;
+                dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
+            } else {
+                // Lava va magma krateri
+                const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
+                grad.addColorStop(0, 'rgba(255, 130, 0, 1)'); 
+                grad.addColorStop(0.45, 'rgba(239, 68, 68, 0.9)');
+                grad.addColorStop(0.8, 'rgba(10, 5, 5, 0.95)'); 
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 
-                // Kuygan teshik
-                dctx.beginPath();
-                dctx.arc(u, v, r, 0, Math.PI * 2);
-                dctx.fill();
+                dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
                 
-                // Lava alpha belgisini o'rnatamiz (Shader uchun)
-                dctx.fillStyle = 'rgba(255, 0, 0, 1)'; // Alpha kanalida zarar borligini bildiradi
-                dctx.beginPath();
-                dctx.arc(u, v, r * 0.8, 0, Math.PI * 2);
-                dctx.fill();
+                dctx.fillStyle = 'rgba(255, 0, 0, 1)'; 
+                dctx.beginPath(); dctx.arc(u, v, r * 0.8, 0, Math.PI*2); dctx.fill();
             }
             dctx.restore();
         }
 
-        // Olovli bo'laklarning (Debris) atrofga sachrashi
-        function createExplosionEffect(x, y, color, count) {
+        function createExplosion(x, y, color, count) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 1.5;
+                const speed = Math.random() * 6 + 2;
                 particles.push(new Debris(
                     x, y,
                     Math.cos(angle) * speed,
-                    Math.sin(angle) * speed - 1, // Ozgina yuqoriga harakat
+                    Math.sin(angle) * speed - 1,
                     color,
-                    Math.random() * 3.5 + 1
+                    Math.random() * 4 + 1.5
                 ));
             }
         }
 
-        // UI Yangilash
+        // Drag to Rotate (Aylantirish) va Hujum rejimi mantiqi
+        canvas.addEventListener('mousedown', (e) => {
+            isInteracting = true;
+            const rect = canvas.getBoundingClientRect();
+            lastMouseX = e.clientX - rect.left;
+            lastMouseY = e.clientY - rect.top;
+
+            if (interactionMode === 'attack') {
+                attack(lastMouseX, lastMouseY);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isInteracting) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (interactionMode === 'rotate') {
+                // Sichqoncha harakatiga qarab sferani burish
+                const deltaX = mouseX - lastMouseX;
+                const deltaY = mouseY - lastMouseY;
+                rotationX += deltaX * 0.007;
+                rotationY += deltaY * 0.007;
+            } else if (interactionMode === 'attack') {
+                attack(mouseX, mouseY);
+            }
+
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+        });
+
+        window.addEventListener('mouseup', () => { 
+            isInteracting = false; 
+            laserLines = [];
+        });
+
+        // Rejimlar tugmasini boshqarish
+        function setInteractionMode(mode) {
+            interactionMode = mode;
+            document.getElementById('mode-attack').className = mode === 'attack' ? 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-red-600 text-white' : 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white';
+            document.getElementById('mode-rotate').className = mode === 'rotate' ? 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white' : 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white';
+        }
+
+        // Statistika yangilanishi
         function updateStats() {
             let aliveB = Math.floor(totalPopulation / 1000000000);
             let aliveM = Math.floor((totalPopulation % 1000000000) / 1000000);
@@ -404,35 +538,24 @@
             document.getElementById('stat-dead').innerText = deadB > 0 ? `${deadB} b ${deadM} m` : `${deadM} m`;
         }
 
-        // Qurol almashtirish
+        // Qurollar o'rtasida o'tish
         function setWeapon(weapon) {
             activeWeapon = weapon;
-            document.querySelectorAll('[id^="w-"]').forEach(btn => btn.className = "w-12 h-12 bg-gray-950 border border-gray-800 rounded-xl transition flex items-center justify-center text-xl text-gray-400");
+            // Agar qurol tanlansa, rejim avtomatik ravishda Hujumga o'tadi
+            setInteractionMode('attack');
+
+            document.querySelectorAll('[id^="w-"]').forEach(btn => btn.className = "w-12 h-12 bg-gray-950 border border-gray-800 rounded-xl transition flex items-center justify-center text-xl text-gray-400 hover:scale-105");
             
             const colors = {
                 laser: 'text-pink-500 border-pink-500',
                 nuke: 'text-red-500 border-red-500',
                 meteor: 'text-yellow-500 border-yellow-500',
-                freeze: 'text-cyan-400 border-cyan-400'
+                freeze: 'text-cyan-400 border-cyan-400',
+                blackhole: 'text-purple-500 border-purple-500',
+                plasma: 'text-green-500 border-green-500'
             };
-            document.getElementById(`w-${weapon}`).className = `w-12 h-12 bg-gray-950 border-2 ${colors[weapon]} rounded-xl transition flex items-center justify-center text-xl`;
+            document.getElementById(`w-${weapon}`).className = `w-12 h-12 bg-gray-950 border-2 ${colors[weapon]} rounded-xl transition flex items-center justify-center text-xl hover:scale-105`;
         }
-
-        // Voqealar zanjiri
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            attack(e.clientX - rect.left, e.clientY - rect.top);
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDrawing) {
-                const rect = canvas.getBoundingClientRect();
-                attack(e.clientX - rect.left, e.clientY - rect.top);
-            }
-        });
-
-        window.addEventListener('mouseup', () => { isDrawing = false; });
 
         function togglePause() {
             isPaused = !isPaused;
@@ -442,21 +565,52 @@
         function resetPlanet() {
             totalPopulation = 7289000000;
             casualties = 0;
-            rotation = 0;
+            rotationX = 0;
+            rotationY = 0;
             dctx.clearRect(0, 0, mapW, mapH);
             particles = [];
+            projectiles = [];
             updateStats();
         }
 
-        // ASOSIY LOOP (60 FPS animatsiya)
+        // Animatsiya Loop (60 FPS)
         function animate() {
-            if (!isPaused) {
-                rotation -= 0.003; // Realistik sekin aylanish
+            if (!isPaused && !isInteracting) {
+                rotationX -= 0.002; // Avtomatik sekin aylanish
             }
 
             render3DPlanet();
 
-            // Zarrachalarni yangilash va chizish
+            // Lazer nurlari animatsiyasi
+            laserLines.forEach(l => {
+                ctx.save();
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = '#ec4899';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4 + Math.sin(Date.now() * 0.1) * 2; // tebranuvchan lazer nuri
+                ctx.beginPath();
+                ctx.moveTo(l.x, 0);
+                ctx.lineTo(l.x, l.y);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 14 + Math.sin(Date.now() * 0.1) * 3;
+                ctx.beginPath();
+                ctx.moveTo(l.x, 0);
+                ctx.lineTo(l.x, l.y);
+                ctx.stroke();
+                ctx.restore();
+            });
+            laserLines = []; // Har bir kadrda tozalash
+
+            // Proyektillar va raketalarni yangilash
+            projectiles = projectiles.filter(p => {
+                const active = p.update();
+                if (active) p.draw();
+                return active;
+            });
+
+            // Zarrachalarni yangilash
             particles.forEach((p, idx) => {
                 p.update();
                 p.draw();
