@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Smash Ultra - Watermelon Strike</title>
+    <title>Solar Smash Ultra - Watermelon Strike (Clean)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -70,7 +70,7 @@
     <!-- O'NG TOMON: Arsenal -->
     <div class="absolute right-6 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3 bg-black bg-opacity-80 p-3 rounded-2xl border border-gray-800">
         <p class="text-[9px] text-gray-500 uppercase tracking-widest text-center font-bold mb-1">Arsenal</p>
-        <button onclick="setWeapon('watermelon')" id="w-watermelon" class="w-12 h-12 bg-gray-950 border-2 border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105 animate-pulse" title="🍉 Tarvuz Hujumi"><i class="fa-solid fa-cookie"></i></button>
+        <button onclick="setWeapon('watermelon')" id="w-watermelon" class="w-12 h-12 bg-gray-950 border-2 border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105" title="🍉 Tarvuz Hujumi"><i class="fa-solid fa-cookie"></i></button>
         <button onclick="setWeapon('laser')" id="w-laser" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-pink-500 rounded-xl transition flex items-center justify-center text-xl text-pink-500 hover:scale-105" title="⚡ Pushti lazer"><i class="fa-solid fa-bolt"></i></button>
         <button onclick="setWeapon('nuke')" id="w-nuke" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-red-500 rounded-xl transition flex items-center justify-center text-xl text-red-500 hover:scale-105" title="🚀 Yadroviy Raketa"><i class="fa-solid fa-rocket"></i></button>
         <button onclick="setWeapon('meteor')" id="w-meteor" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105" title="☄️ Meteorit"><i class="fa-solid fa-meteor"></i></button>
@@ -97,7 +97,7 @@
         let rotationX = 0; 
         let rotationY = 0; 
 
-        let activeWeapon = 'watermelon'; // Boshlang'ich qurol - yangi tarvuz!
+        let activeWeapon = 'watermelon'; 
         let interactionMode = 'attack'; 
         let isInteracting = false;
         let lastMouseX = 0;
@@ -192,10 +192,10 @@
                 this.y = this.startY + (this.targetY - this.startY) * this.progress;
 
                 let tailColor = '#f59e0b';
-                if (this.type === 'watermelon') tailColor = '#ca8a04';
+                if (this.type === 'watermelon') tailColor = '#eab308';
                 else if (this.type === 'nuke') tailColor = '#f43f5e';
 
-                particles.push(new Debris(this.x, this.y, (Math.random() - 0.5) * 1, (Math.random() - 0.5) * 1, tailColor, Math.random() * 2 + 1));
+                particles.push(new Debris(this.x, this.y, (Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.2, tailColor, Math.random() * 2 + 1));
 
                 if (this.progress >= 1) {
                     triggerImpact(this.targetX, this.targetY, this.type);
@@ -206,19 +206,13 @@
             draw() {
                 ctx.save();
                 if (this.type === 'watermelon') {
-                    // Qora qobiq / Kontur
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, 11, 0, Math.PI * 2);
-                    ctx.fillStyle = '#000000';
-                    ctx.fill();
-
-                    // Oltin-sariq tarvuz tanasi
+                    // Qalin qora aylana olib tashlandi! Faqat toza tarvuz chiziladi.
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
                     ctx.fillStyle = '#facc15'; 
                     ctx.fill();
 
-                    // Vertikal qora/to'q jigarrang chiziqlar (Xuddi rasmdagidek)
+                    // Chiziqlar
                     ctx.save();
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
@@ -322,8 +316,8 @@
                             if (blueIntens > 200) {
                                 r = 130; g = 220; b = 255; 
                             } else if (greenIntens === 111) { 
-                                // Tarvuz sharbati va po'stlog'i izi (yashil-qizil shatranj)
-                                r = 185; g = 28; b = 28; 
+                                // Tarvuz zarbasi izi (Atrofida qora qobiqsiz toza qizil va yashil aralashmasi)
+                                r = 190; g = 30; b = 30; 
                             } else if (intens > 50) {
                                 const pulse = 1.0 + Math.sin(Date.now() * 0.015 + u) * 0.25;
                                 r = Math.min(255, 255 * pulse);
@@ -368,7 +362,6 @@
 
             if (dist < radius) {
                 if (activeWeapon === 'watermelon') {
-                    // Osmondan tarvuz tushadi
                     projectiles.push(new Projectile(canvasX - 100, 0, canvasX, canvasY, 'watermelon'));
                 } 
                 else if (activeWeapon === 'laser') {
@@ -381,7 +374,7 @@
                 else if (activeWeapon === 'meteor') {
                     projectiles.push(new Projectile(canvasX + 150, 0, canvasX, canvasY, 'meteor'));
                 } 
-                else if (activeWeapon === 'freeze' || activeWeapon === 'blackhole' || activeWeapon === 'plasma') {
+                else if (activeWeapon === 'freeze' || activeWeapon === 'blackhole') {
                     triggerImpact(canvasX, canvasY, activeWeapon);
                 }
             }
@@ -408,11 +401,10 @@
             let kill = 0;
 
             if (type === 'watermelon') {
-                r = 35;
+                r = 30;
                 kill = Math.floor(Math.random() * 120000000) + 40000000;
                 drawOnDamageMap(u, v, r, 'watermelon');
-                // Qizil tarvuz go'shti va qora urug'lari uchib ketadi!
-                createWatermelonExplosion(canvasX, canvasY, 30);
+                createWatermelonExplosion(canvasX, canvasY, 25);
             }
             else if (type === 'laser') {
                 r = 15;
@@ -455,17 +447,16 @@
         function drawOnDamageMap(u, v, r, mode) {
             dctx.save();
             if (mode === 'watermelon') {
-                // Tarvuz izi (Yashil po'stloq, qizil etak)
-                const grad = dctx.createRadialGradient(u, v, r * 0.2, u, v, r);
-                grad.addColorStop(0, 'rgba(239, 68, 68, 1)'); // Qizil mag'iz
-                grad.addColorStop(0.7, 'rgba(34, 197, 94, 0.9)'); // Yashil po'stloq
+                const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
+                grad.addColorStop(0, 'rgba(239, 68, 68, 1)'); 
+                grad.addColorStop(0.7, 'rgba(34, 197, 94, 0.9)'); 
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
 
-                // Maxsus marker qo'yamiz (render qilishda yashil-qizil tarvuz effekti chiqishi uchun)
-                dctx.fillStyle = 'rgba(0, 111, 0, 0.5)'; 
-                dctx.beginPath(); dctx.arc(u, v, r * 0.8, 0, Math.PI*2); dctx.fill();
+                // Tarvuz izini qora kuyishdan himoya qilish markeri
+                dctx.fillStyle = 'rgba(0, 111, 0, 0.4)'; 
+                dctx.beginPath(); dctx.arc(u, v, r * 0.85, 0, Math.PI*2); dctx.fill();
             }
             else if (mode === 'freeze') {
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
@@ -493,7 +484,6 @@
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = Math.random() * 5 + 1.5;
-                // Ranglar: qizil (tarvuz eti), yashil (po'stloq), qora (urug'lar)
                 const colors = ['#ef4444', '#10b981', '#1e293b', '#f87171'];
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 particles.push(new Debris(
@@ -621,7 +611,7 @@
 
                 ctx.strokeStyle = '#ec4899';
                 ctx.lineWidth = 14 + Math.sin(Date.now() * 0.1) * 3;
-                ctx.beginPath(); ctx.moveTo(l.x, 0); ctx.lineTo(l.x, l.y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(l.x, 0); ctx.lineTo(l.x, l.y); stroke();
                 ctx.restore();
             });
             laserLines = []; 
