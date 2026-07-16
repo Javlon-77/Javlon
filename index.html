@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Smash Ultra - Real Earth Map 3D</title>
+    <title>Solar Smash Ultra - Watermelon Strike</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -70,12 +70,12 @@
     <!-- O'NG TOMON: Arsenal -->
     <div class="absolute right-6 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3 bg-black bg-opacity-80 p-3 rounded-2xl border border-gray-800">
         <p class="text-[9px] text-gray-500 uppercase tracking-widest text-center font-bold mb-1">Arsenal</p>
-        <button onclick="setWeapon('laser')" id="w-laser" class="w-12 h-12 bg-gray-950 border-2 border-pink-500 rounded-xl transition flex items-center justify-center text-xl text-pink-500 hover:scale-105" title="⚡ Pushti lazer"><i class="fa-solid fa-bolt"></i></button>
+        <button onclick="setWeapon('watermelon')" id="w-watermelon" class="w-12 h-12 bg-gray-950 border-2 border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105 animate-pulse" title="🍉 Tarvuz Hujumi"><i class="fa-solid fa-cookie"></i></button>
+        <button onclick="setWeapon('laser')" id="w-laser" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-pink-500 rounded-xl transition flex items-center justify-center text-xl text-pink-500 hover:scale-105" title="⚡ Pushti lazer"><i class="fa-solid fa-bolt"></i></button>
         <button onclick="setWeapon('nuke')" id="w-nuke" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-red-500 rounded-xl transition flex items-center justify-center text-xl text-red-500 hover:scale-105" title="🚀 Yadroviy Raketa"><i class="fa-solid fa-rocket"></i></button>
         <button onclick="setWeapon('meteor')" id="w-meteor" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-yellow-500 rounded-xl transition flex items-center justify-center text-xl text-yellow-500 hover:scale-105" title="☄️ Meteorit"><i class="fa-solid fa-meteor"></i></button>
         <button onclick="setWeapon('freeze')" id="w-freeze" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-cyan-400 rounded-xl transition flex items-center justify-center text-xl text-cyan-400 hover:scale-105" title="❄️ Blizzard"><i class="fa-regular fa-snowflake"></i></button>
         <button onclick="setWeapon('blackhole')" id="w-blackhole" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-purple-500 rounded-xl transition flex items-center justify-center text-xl text-purple-500 hover:scale-105" title="🌀 Qora tuynuk"><i class="fa-solid fa-circle-notch animate-spin"></i></button>
-        <button onclick="setWeapon('plasma')" id="w-plasma" class="w-12 h-12 bg-gray-950 border border-gray-800 hover:border-green-500 rounded-xl transition flex items-center justify-center text-xl text-green-500 hover:scale-105" title="🟢 Plazma to'pi"><i class="fa-solid fa-atom"></i></button>
     </div>
 
     <script>
@@ -97,18 +97,16 @@
         let rotationX = 0; 
         let rotationY = 0; 
 
-        let activeWeapon = 'laser';
+        let activeWeapon = 'watermelon'; // Boshlang'ich qurol - yangi tarvuz!
         let interactionMode = 'attack'; 
         let isInteracting = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
 
-        // Yumshoq va realistik soya yorug'ligi yo'nalishi
         const lightDir = { x: 0.8, y: -0.1, z: 0.6 };
         const mag = Math.hypot(lightDir.x, lightDir.y, lightDir.z);
         lightDir.x /= mag; lightDir.y /= mag; lightDir.z /= mag;
 
-        // Haqiqiy Yer xaritasi teksturasi uchun Canvas
         const mapW = 1024;
         const mapH = 512;
         const mapCanvas = document.createElement('canvas');
@@ -116,18 +114,16 @@
         mapCanvas.height = mapH;
         const mctx = mapCanvas.getContext('2d');
 
-        // Shikastlanishlar qatlami
         const damageCanvas = document.createElement('canvas');
         damageCanvas.width = mapW;
         damageCanvas.height = mapH;
         const dctx = damageCanvas.getContext('2d');
 
-        // Real Yer konturlari (Xalqaro standart xarita proporsiyalarida)
         function generateRealEarthMap() {
-            mctx.fillStyle = '#05142a'; // Chuqur ko'k okean
+            mctx.fillStyle = '#05142a'; 
             mctx.fillRect(0, 0, mapW, mapH);
 
-            mctx.fillStyle = '#103d18'; // To'q yashil quruqliklar
+            mctx.fillStyle = '#103d18'; 
 
             // 1. Shimoliy Amerika
             mctx.beginPath();
@@ -141,7 +137,7 @@
             mctx.lineTo(230, 420); mctx.lineTo(220, 350);
             mctx.closePath(); mctx.fill();
 
-            // 3. Yevroosiyo (Yevropa + Osiyo)
+            // 3. Yevroosiyo
             mctx.beginPath();
             mctx.moveTo(380, 100); mctx.lineTo(550, 80); mctx.lineTo(800, 100); mctx.lineTo(920, 140);
             mctx.lineTo(880, 280); mctx.lineTo(800, 290); mctx.lineTo(750, 300); mctx.lineTo(650, 250);
@@ -165,13 +161,11 @@
             mctx.moveTo(280, 50); mctx.lineTo(340, 40); mctx.lineTo(320, 90); mctx.lineTo(270, 80);
             mctx.closePath(); mctx.fill();
 
-            // Haqiqiy Yer shahar chiroqlari (Tungi tomonda yonuvchi oltin nuqtalar)
-            mctx.fillStyle = 'rgba(254, 240, 138, 0.95)'; // Yorqin oltin
+            mctx.fillStyle = 'rgba(254, 240, 138, 0.95)'; 
             for (let i = 0; i < 600; i++) {
                 let rx = Math.random() * mapW;
                 let ry = Math.random() * mapH;
                 let pixel = mctx.getImageData(rx, ry, 1, 1).data;
-                // Agar piksel faqat quruqlik ustida bo'lsa
                 if (pixel[1] > 30 && pixel[0] < 50) { 
                     mctx.fillRect(rx, ry, Math.random() * 2 + 1, Math.random() * 2 + 1);
                 }
@@ -190,15 +184,18 @@
                 this.targetX = targetX; this.targetY = targetY;
                 this.type = type;
                 this.progress = 0;
-                this.speed = type === 'nuke' ? 0.03 : 0.04;
+                this.speed = type === 'watermelon' ? 0.05 : (type === 'nuke' ? 0.03 : 0.04);
             }
             update() {
                 this.progress += this.speed;
                 this.x = this.startX + (this.targetX - this.startX) * this.progress;
                 this.y = this.startY + (this.targetY - this.startY) * this.progress;
 
-                const tailColor = this.type === 'nuke' ? '#f43f5e' : '#f59e0b';
-                particles.push(new Debris(this.x, this.y, (Math.random() - 0.5) * 1, (Math.random() - 0.5) * 1, tailColor, Math.random() * 3 + 1));
+                let tailColor = '#f59e0b';
+                if (this.type === 'watermelon') tailColor = '#ca8a04';
+                else if (this.type === 'nuke') tailColor = '#f43f5e';
+
+                particles.push(new Debris(this.x, this.y, (Math.random() - 0.5) * 1, (Math.random() - 0.5) * 1, tailColor, Math.random() * 2 + 1));
 
                 if (this.progress >= 1) {
                     triggerImpact(this.targetX, this.targetY, this.type);
@@ -208,12 +205,41 @@
             }
             draw() {
                 ctx.save();
-                ctx.shadowBlur = 15;
-                if (this.type === 'nuke') {
+                if (this.type === 'watermelon') {
+                    // Qora qobiq / Kontur
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 11, 0, Math.PI * 2);
+                    ctx.fillStyle = '#000000';
+                    ctx.fill();
+
+                    // Oltin-sariq tarvuz tanasi
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
+                    ctx.fillStyle = '#facc15'; 
+                    ctx.fill();
+
+                    // Vertikal qora/to'q jigarrang chiziqlar (Xuddi rasmdagidek)
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.strokeStyle = '#713f12';
+                    ctx.lineWidth = 2.2;
+                    for (let offset = -8; offset <= 8; offset += 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.x + offset, this.y - 12);
+                        ctx.lineTo(this.x + offset, this.y + 12);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                } else if (this.type === 'nuke') {
+                    ctx.shadowBlur = 15;
                     ctx.shadowColor = '#f43f5e';
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath(); ctx.arc(this.x, this.y, 4, 0, Math.PI * 2); ctx.fill();
                 } else if (this.type === 'meteor') {
+                    ctx.shadowBlur = 15;
                     ctx.shadowColor = '#f59e0b';
                     ctx.fillStyle = '#ea580c';
                     ctx.beginPath(); ctx.arc(this.x, this.y, 6, 0, Math.PI * 2); ctx.fill();
@@ -239,15 +265,12 @@
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.life;
-                ctx.shadowBlur = this.size * 2;
-                ctx.shadowColor = this.color;
                 ctx.fillStyle = this.color;
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             }
         }
 
-        // 3D Sfera Shading Renderer
         const screenImg = ctx.createImageData(R_SIZE, R_SIZE);
         const mapData = mctx.getImageData(0, 0, mapW, mapH);
         
@@ -267,7 +290,6 @@
                         const ny = dy / radius;
                         const nz = z / radius;
                         
-                        // Aylanish matritsasi hisobi (Drag momentum)
                         const ry = ny * Math.cos(rotationY) - nz * Math.sin(rotationY);
                         const rz1 = ny * Math.sin(rotationY) + nz * Math.cos(rotationY);
                         const rx = nx * Math.cos(rotationX) - rz1 * Math.sin(rotationX);
@@ -294,21 +316,24 @@
                         
                         if (dmgType > 0) {
                             const intens = dData.data[dmgIdx];
+                            const greenIntens = dData.data[dmgIdx + 1];
                             const blueIntens = dData.data[dmgIdx + 2];
                             
                             if (blueIntens > 200) {
-                                r = 130; g = 220; b = 255; // Muzlagan hududlar
+                                r = 130; g = 220; b = 255; 
+                            } else if (greenIntens === 111) { 
+                                // Tarvuz sharbati va po'stlog'i izi (yashil-qizil shatranj)
+                                r = 185; g = 28; b = 28; 
                             } else if (intens > 50) {
                                 const pulse = 1.0 + Math.sin(Date.now() * 0.015 + u) * 0.25;
                                 r = Math.min(255, 255 * pulse);
                                 g = Math.min(255, (100 + intens / 2) * pulse);
-                                b = 20; // Yonib turgan magma effekti
+                                b = 20; 
                             } else {
-                                r = 6; g = 5; b = 6; // Kuygan krater cheti
+                                r = 6; g = 5; b = 6; 
                             }
                         }
 
-                        // Silliq soyalash va kun/tun almashishi (ortiqcha sariq chiziqlarsiz)
                         if (dot >= 0) {
                             const factor = 0.1 + dot * 0.9;
                             screenImg.data[idx] = r * factor;
@@ -342,7 +367,11 @@
             const dist = Math.hypot(dx, dy);
 
             if (dist < radius) {
-                if (activeWeapon === 'laser') {
+                if (activeWeapon === 'watermelon') {
+                    // Osmondan tarvuz tushadi
+                    projectiles.push(new Projectile(canvasX - 100, 0, canvasX, canvasY, 'watermelon'));
+                } 
+                else if (activeWeapon === 'laser') {
                     laserLines.push({ x: canvasX, y: canvasY });
                     triggerImpact(canvasX, canvasY, 'laser');
                 } 
@@ -378,7 +407,14 @@
             let r = 12;
             let kill = 0;
 
-            if (type === 'laser') {
+            if (type === 'watermelon') {
+                r = 35;
+                kill = Math.floor(Math.random() * 120000000) + 40000000;
+                drawOnDamageMap(u, v, r, 'watermelon');
+                // Qizil tarvuz go'shti va qora urug'lari uchib ketadi!
+                createWatermelonExplosion(canvasX, canvasY, 30);
+            }
+            else if (type === 'laser') {
                 r = 15;
                 kill = Math.floor(Math.random() * 25000000) + 10000000;
                 drawOnDamageMap(u, v, r, 'heat');
@@ -408,12 +444,6 @@
                 drawOnDamageMap(u, v, r, 'heat');
                 createExplosion(canvasX, canvasY, '#a855f7', 40);
             }
-            else if (type === 'plasma') {
-                r = 25;
-                kill = Math.floor(Math.random() * 100000000) + 30000000;
-                drawOnDamageMap(u, v, r, 'plasma');
-                createExplosion(canvasX, canvasY, '#22c55e', 20);
-            }
 
             if (totalPopulation > 0) {
                 casualties += Math.min(totalPopulation, kill);
@@ -424,17 +454,23 @@
 
         function drawOnDamageMap(u, v, r, mode) {
             dctx.save();
-            if (mode === 'freeze') {
-                const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(150, 240, 255, 1)');
-                grad.addColorStop(0.7, 'rgba(34, 211, 238, 0.9)');
+            if (mode === 'watermelon') {
+                // Tarvuz izi (Yashil po'stloq, qizil etak)
+                const grad = dctx.createRadialGradient(u, v, r * 0.2, u, v, r);
+                grad.addColorStop(0, 'rgba(239, 68, 68, 1)'); // Qizil mag'iz
+                grad.addColorStop(0.7, 'rgba(34, 197, 94, 0.9)'); // Yashil po'stloq
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
-            } else if (mode === 'plasma') {
+
+                // Maxsus marker qo'yamiz (render qilishda yashil-qizil tarvuz effekti chiqishi uchun)
+                dctx.fillStyle = 'rgba(0, 111, 0, 0.5)'; 
+                dctx.beginPath(); dctx.arc(u, v, r * 0.8, 0, Math.PI*2); dctx.fill();
+            }
+            else if (mode === 'freeze') {
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(34, 197, 94, 1)');
-                grad.addColorStop(0.6, 'rgba(20, 83, 45, 0.8)');
+                grad.addColorStop(0, 'rgba(150, 240, 255, 1)');
+                grad.addColorStop(0.7, 'rgba(34, 211, 238, 0.9)');
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
@@ -451,6 +487,23 @@
                 dctx.beginPath(); dctx.arc(u, v, r * 0.8, 0, Math.PI*2); dctx.fill();
             }
             dctx.restore();
+        }
+
+        function createWatermelonExplosion(x, y, count) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1.5;
+                // Ranglar: qizil (tarvuz eti), yashil (po'stloq), qora (urug'lar)
+                const colors = ['#ef4444', '#10b981', '#1e293b', '#f87171'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particles.push(new Debris(
+                    x, y,
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed - 1.5,
+                    color,
+                    Math.random() * 4 + 1
+                ));
+            }
         }
 
         function createExplosion(x, y, color, count) {
@@ -525,12 +578,12 @@
             document.querySelectorAll('[id^="w-"]').forEach(btn => btn.className = "w-12 h-12 bg-gray-950 border border-gray-800 rounded-xl transition flex items-center justify-center text-xl text-gray-400 hover:scale-105");
             
             const colors = {
+                watermelon: 'text-yellow-500 border-yellow-500',
                 laser: 'text-pink-500 border-pink-500',
                 nuke: 'text-red-500 border-red-500',
                 meteor: 'text-yellow-500 border-yellow-500',
                 freeze: 'text-cyan-400 border-cyan-400',
-                blackhole: 'text-purple-500 border-purple-500',
-                plasma: 'text-green-500 border-green-500'
+                blackhole: 'text-purple-500 border-purple-500'
             };
             document.getElementById(`w-${weapon}`).className = `w-12 h-12 bg-gray-950 border-2 ${colors[weapon]} rounded-xl transition flex items-center justify-center text-xl hover:scale-105`;
         }
@@ -558,7 +611,6 @@
 
             render3DPlanet();
 
-            // Laser nurlari
             laserLines.forEach(l => {
                 ctx.save();
                 ctx.shadowBlur = 25;
@@ -574,14 +626,12 @@
             });
             laserLines = []; 
 
-            // Raketalar
             projectiles = projectiles.filter(p => {
                 const active = p.update();
                 if (active) p.draw();
                 return active;
             });
 
-            // Zarrachalar
             particles.forEach((p, idx) => {
                 p.update();
                 p.draw();
