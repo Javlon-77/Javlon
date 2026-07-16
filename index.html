@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Smash Ultra - Watermelon Strike (Clean)</title>
+    <title>Solar Smash Ultra - Clean Watermelon Strike</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -206,13 +206,12 @@
             draw() {
                 ctx.save();
                 if (this.type === 'watermelon') {
-                    // Qalin qora aylana olib tashlandi! Faqat toza tarvuz chiziladi.
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
                     ctx.fillStyle = '#facc15'; 
                     ctx.fill();
 
-                    // Chiziqlar
+                    // Yo'l-yo'l chiziqlari
                     ctx.save();
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, 9, 0, Math.PI * 2);
@@ -306,26 +305,18 @@
                         let b = mapData.data[mapIdx + 2];
                         
                         const dot = nx * lightDir.x + ny * lightDir.y + nz * lightDir.z;
-                        const dmgType = dData.data[dmgIdx + 3];
+                        const dmgType = dData.data[dmgIdx + 3]; // Alpha kanali
                         
                         if (dmgType > 0) {
-                            const intens = dData.data[dmgIdx];
-                            const greenIntens = dData.data[dmgIdx + 1];
-                            const blueIntens = dData.data[dmgIdx + 2];
+                            const alpha = dmgType / 255;
+                            const dmgR = dData.data[dmgIdx];
+                            const dmgG = dData.data[dmgIdx + 1];
+                            const dmgB = dData.data[dmgIdx + 2];
                             
-                            if (blueIntens > 200) {
-                                r = 130; g = 220; b = 255; 
-                            } else if (greenIntens === 111) { 
-                                // Tarvuz zarbasi izi (Atrofida qora qobiqsiz toza qizil va yashil aralashmasi)
-                                r = 190; g = 30; b = 30; 
-                            } else if (intens > 50) {
-                                const pulse = 1.0 + Math.sin(Date.now() * 0.015 + u) * 0.25;
-                                r = Math.min(255, 255 * pulse);
-                                g = Math.min(255, (100 + intens / 2) * pulse);
-                                b = 20; 
-                            } else {
-                                r = 6; g = 5; b = 6; 
-                            }
+                            // Sayyora foni bilan silliq aralashtirish (Alpha Blending)
+                            r = r * (1 - alpha) + dmgR * alpha;
+                            g = g * (1 - alpha) + dmgG * alpha;
+                            b = b * (1 - alpha) + dmgB * alpha;
                         }
 
                         if (dot >= 0) {
@@ -401,7 +392,7 @@
             let kill = 0;
 
             if (type === 'watermelon') {
-                r = 30;
+                r = 25;
                 kill = Math.floor(Math.random() * 120000000) + 40000000;
                 drawOnDamageMap(u, v, r, 'watermelon');
                 createWatermelonExplosion(canvasX, canvasY, 25);
@@ -447,35 +438,29 @@
         function drawOnDamageMap(u, v, r, mode) {
             dctx.save();
             if (mode === 'watermelon') {
+                // Silliq chekkali yashil va qizil tarvuz sharbati
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(239, 68, 68, 1)'); 
-                grad.addColorStop(0.7, 'rgba(34, 197, 94, 0.9)'); 
-                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                grad.addColorStop(0, 'rgba(239, 68, 68, 0.95)'); // Qizil mag'iz
+                grad.addColorStop(0.65, 'rgba(34, 197, 94, 0.85)'); // Yashil po'stloq
+                grad.addColorStop(1, 'rgba(0,0,0,0)'); // Shaffof o'tish
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
-
-                // Tarvuz izini qora kuyishdan himoya qilish markeri
-                dctx.fillStyle = 'rgba(0, 111, 0, 0.4)'; 
-                dctx.beginPath(); dctx.arc(u, v, r * 0.85, 0, Math.PI*2); dctx.fill();
             }
             else if (mode === 'freeze') {
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(150, 240, 255, 1)');
-                grad.addColorStop(0.7, 'rgba(34, 211, 238, 0.9)');
+                grad.addColorStop(0, 'rgba(150, 240, 255, 0.9)');
+                grad.addColorStop(0.7, 'rgba(34, 211, 238, 0.7)');
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
             } else {
                 const grad = dctx.createRadialGradient(u, v, r * 0.1, u, v, r);
-                grad.addColorStop(0, 'rgba(255, 130, 0, 1)'); 
-                grad.addColorStop(0.45, 'rgba(239, 68, 68, 0.9)');
-                grad.addColorStop(0.8, 'rgba(10, 5, 5, 0.95)'); 
+                grad.addColorStop(0, 'rgba(255, 130, 0, 0.9)'); 
+                grad.addColorStop(0.5, 'rgba(239, 68, 68, 0.8)');
+                grad.addColorStop(0.9, 'rgba(10, 5, 5, 0.7)'); 
                 grad.addColorStop(1, 'rgba(0,0,0,0)');
                 dctx.fillStyle = grad;
                 dctx.beginPath(); dctx.arc(u, v, r, 0, Math.PI*2); dctx.fill();
-                
-                dctx.fillStyle = 'rgba(255, 0, 0, 1)'; 
-                dctx.beginPath(); dctx.arc(u, v, r * 0.8, 0, Math.PI*2); dctx.fill();
             }
             dctx.restore();
         }
@@ -611,7 +596,7 @@
 
                 ctx.strokeStyle = '#ec4899';
                 ctx.lineWidth = 14 + Math.sin(Date.now() * 0.1) * 3;
-                ctx.beginPath(); ctx.moveTo(l.x, 0); ctx.lineTo(l.x, l.y); stroke();
+                ctx.beginPath(); ctx.moveTo(l.x, 0); ctx.lineTo(l.x, l.y); ctx.stroke();
                 ctx.restore();
             });
             laserLines = []; 
