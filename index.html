@@ -3,251 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystery Guest - Kimligingni Top!</title>
-    <!-- Tailwind CSS for modern layout -->
+    <title>Neon Gravity Sandbox - Koinot Simulyatori</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Canvas Confetti for winning effect -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Rajdhani', sans-serif;
-            background: radial-gradient(circle, #1a102f 0%, #050014 100%);
+            background-color: #030008;
         }
-        .neon-title {
+        .neon-text {
             font-family: 'Orbitron', sans-serif;
-            text-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7;
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
         }
-        .neon-border {
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-            border: 1px solid rgba(168, 85, 247, 0.6);
-        }
-        .chat-bubble {
-            animation: popIn 0.3s ease-out forwards;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        canvas {
+            display: block;
+            background: radial-gradient(circle, #090314 0%, #020005 100%);
         }
     </style>
 </head>
-<body class="min-h-screen text-white flex flex-col items-center justify-between p-4 overflow-hidden">
+<body class="h-screen w-screen overflow-hidden flex flex-col md:flex-row text-white select-none">
 
-    <!-- Header -->
-    <header class="w-full max-w-md text-center mt-4">
-        <h1 class="text-3xl font-bold tracking-wider neon-title text-purple-400">MYSTERY GUEST</h1>
-        <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Koinot sirlarini fosh et!</p>
-    </header>
+    <!-- Chap tarafdagi boshqaruv paneli -->
+    <div class="w-full md:w-80 bg-black bg-opacity-80 backdrop-blur-md border-b md:border-b-0 md:border-r border-purple-900 border-opacity-40 p-5 flex flex-col justify-between z-10 shrink-0">
+        <div>
+            <h1 class="text-2xl font-black tracking-wider text-purple-400 neon-text">GRAVITY LAB</h1>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-6">O'z koinotingni yarat</p>
 
-    <!-- Main Game Box -->
-    <main class="w-full max-w-md bg-opacity-20 bg-purple-950 backdrop-blur-md rounded-2xl p-6 neon-border flex flex-col justify-between h-[70vh]">
-        
-        <!-- Status Bar -->
-        <div class="flex justify-between items-center border-b border-purple-800 pb-3 mb-4">
-            <div class="flex items-center gap-1">
-                <span class="text-xs text-gray-400">IMKONIYAT:</span>
-                <span id="hearts" class="text-red-500 tracking-wider">❤️❤️❤️❤️❤️</span>
-            </div>
-            <div class="text-xs text-gray-400 bg-purple-900 bg-opacity-50 px-2 py-1 rounded">
-                BALL: <span id="score" class="text-purple-300 font-bold">0</span>
-            </div>
-        </div>
+            <div class="space-y-6">
+                <!-- Sayyora Massasi -->
+                <div>
+                    <label class="text-xs text-gray-400 uppercase tracking-wider block mb-1">Yaratiladigan jism turi</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setMassPreset('planet')" id="btn-planet" class="py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition">SAYYORA 🪐</button>
+                        <button onclick="setMassPreset('sun')" id="btn-sun" class="py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition">YULDUZ ☀️</button>
+                    </div>
+                </div>
 
-        <!-- Chat History -->
-        <div id="chat-box" class="flex-grow overflow-y-auto space-y-3 mb-4 pr-1 flex flex-col justify-end">
-            <!-- Bot Message -->
-            <div class="chat-bubble flex items-start gap-2">
-                <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-sm shadow-md">🔮</div>
-                <div class="bg-purple-900 bg-opacity-60 text-sm p-3 rounded-2xl rounded-tl-none max-w-[80%] border border-purple-800">
-                    Men bir maxfiy qahramon yoki ob'ektni o'yladim. U haqida savol so'ra yoki kimligini taxmin qil!
+                <!-- Tortishish kuchi (Gravity G) -->
+                <div>
+                    <div class="flex justify-between text-xs text-gray-400 uppercase tracking-wider mb-1">
+                        <span>Gravitatsiya kuchi</span>
+                        <span id="g-val" class="text-purple-400 font-bold">0.15</span>
+                    </div>
+                    <input type="range" id="gravity-slider" min="0.01" max="1" step="0.01" value="0.15" class="w-full h-1 bg-purple-950 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                </div>
+
+                <!-- Sayyoralar Izlari (Trails) -->
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400 uppercase tracking-wider">Harakat izlarini ko'rsat</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="trails-toggle" checked class="sr-only peer">
+                        <div class="w-9 h-5 bg-purple-950 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                </div>
+
+                <hr class="border-purple-950">
+
+                <!-- Tayyor ssenariylar (Presets) -->
+                <div class="space-y-2">
+                    <label class="text-xs text-gray-400 uppercase tracking-wider block">Tayyor koinot tizimlari</label>
+                    <button onclick="loadPreset('solar')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
+                        <span>Quyosh va 3 ta sayyora</span> <span>🪐</span>
+                    </button>
+                    <button onclick="loadPreset('binary')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
+                        <span>Qo'shaloq yulduz tizimi</span> <span>☀️☀️</span>
+                    </button>
+                    <button onclick="loadPreset('chaos')" class="w-full text-left py-2 px-3 bg-purple-950 bg-opacity-30 hover:bg-opacity-60 border border-purple-900 border-opacity-40 hover:border-purple-700 rounded-lg text-xs transition flex justify-between">
+                        <span>Kometalar yomg'iri</span> <span>☄️</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Controls / Input -->
-        <div class="space-y-3">
-            <!-- Suggestive Tags (Tezkor Savollar) -->
-            <div class="flex gap-2 overflow-x-auto pb-1 text-xs">
-                <button onclick="askPreset('U tirik odammi?')" class="bg-purple-900 bg-opacity-40 hover:bg-opacity-80 px-3 py-1.5 rounded-full border border-purple-700 whitespace-nowrap transition">Tirikmi? 🧬</button>
-                <button onclick="askPreset('U hayoliy qahramonmi?')" class="bg-purple-900 bg-opacity-40 hover:bg-opacity-80 px-3 py-1.5 rounded-full border border-purple-700 whitespace-nowrap transition">Kino/Kitobdanmi? 📚</button>
-                <button onclick="askPreset('U haqiqiy hayotda bormi?')" class="bg-purple-900 bg-opacity-40 hover:bg-opacity-80 px-3 py-1.5 rounded-full border border-purple-700 whitespace-nowrap transition">Real hayotdami? 🌍</button>
-            </div>
-
-            <!-- Custom Question Form -->
-            <form id="question-form" onsubmit="handleQuestion(event)" class="flex gap-2">
-                <input id="user-input" type="text" placeholder="Savol bering yoki taxmin qiling..." 
-                       class="flex-grow bg-black bg-opacity-50 border border-purple-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 text-white placeholder-gray-500 transition">
-                <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white px-5 rounded-xl transition font-bold shadow-lg flex items-center justify-center text-sm">
-                    YUBORISH
-                </button>
-            </form>
+        <div class="mt-6 space-y-2">
+            <button onclick="clearCanvas()" class="w-full py-2.5 bg-red-950 bg-opacity-40 hover:bg-opacity-70 border border-red-900 text-xs font-bold rounded-xl transition text-red-400">
+                FAZONI TOZALASH 🧹
+            </button>
+            <p class="text-[10px] text-gray-500 text-center leading-relaxed">
+                *Sichqonchani yoki ekranni bosib, orqaga torting va qo'yib yuboring — sayyora uchib ketadi!
+            </p>
         </div>
-    </main>
+    </div>
 
-    <!-- Footer / Reset -->
-    <footer class="mb-4">
-        <button onclick="startNewGame()" class="text-xs text-purple-400 hover:text-purple-300 transition uppercase tracking-widest border border-purple-800 px-4 py-2 rounded-lg bg-purple-950 bg-opacity-30">
-            Yangi O'yinni Boshlash 🔄
-        </button>
-    </footer>
+    <!-- Canvas (Koinot maydoni) -->
+    <div class="flex-grow relative h-full">
+        <canvas id="spaceCanvas" class="w-full h-full"></canvas>
+    </div>
 
-    <!-- Audio Synthesis API for voices -->
     <script>
-        // O'yin ma'lumotlar bazasi (Qahramonlar)
-        const characters = [
-            { name: "Sherlok Xolms", tags: ["detektiv", "kitob", "kino", "london", "tirikmas", "hayoliy", "aqlli", "shlyapa"] },
-            { name: "Cristiano Ronaldo", tags: ["futbolist", "tirik", "real", "sport", "portugaliya", "mashhur", "raqam 7"] },
-            { name: "O'rgimchak odam", tags: ["hayoliy", "kino", "tirikmas", "qahramon", "piter parker", "to'r", "superqahramon"] },
-            { name: "Stiv Jobs", tags: ["tirikmas", "real", "apple", "iphone", "texnologiya", "asoschi"] },
-            { name: "Harry Potter", tags: ["hayoliy", "kino", "kitob", "sehrgar", "tirikmas", "ko'zoynak", "hogvarts"] },
-            { name: "Ilon Mask", tags: ["tirik", "real", "milliarder", "tesla", "kosmos", "spacex", "texnologiya"] },
-            { name: "Arslon", tags: ["hayvon", "tirik", "real", "sher", "o'rmon", "qirol"] }
-        ];
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
 
-        let secretCharacter = {};
-        let lives = 5;
-        let score = 0;
-
-        // O'yinni boshlash
-        function startNewGame() {
-            secretCharacter = characters[Math.floor(Math.random() * characters.length)];
-            lives = 5;
-            updateHearts();
-            document.getElementById('chat-box').innerHTML = `
-                <div class="chat-bubble flex items-start gap-2">
-                    <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-sm">🔮</div>
-                    <div class="bg-purple-900 bg-opacity-60 text-sm p-3 rounded-2xl rounded-tl-none max-w-[80%] border border-purple-800">
-                        Yangi o'yin boshlandi! Men bir sirli personajni o'yladim. Qani, toping-chi?
-                    </div>
-                </div>
-            `;
-            speak("Yangi o'yin boshlandi! Men tayyorman.");
+        // Canvas o'lchamlarini ekran bilan moslashtirish
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
         }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        // Matnni ovozli o'qish (Web Speech API)
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'uz-UZ'; // Agar o'zbekcha qo'llab-quvvatlanmasa, tizim eng mosini tanlaydi
-                utterance.rate = 1.1;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
+        // Global o'yin holati
+        let bodies = [];
+        let G = 0.15; // Gravitatsiya doimiysi
+        let showTrails = true;
+        let selectedMassType = 'planet'; // planet yoki sun
 
-        // Yurakchalarni yangilash
-        function updateHearts() {
-            document.getElementById('hearts').innerText = "❤️".repeat(lives) + "💔".repeat(5 - lives);
-        }
+        // Drag & Shoot (Uchirish) mexanikasi
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
 
-        // Foydalanuvchi xabari
-        function appendUserMessage(text) {
-            const chatBox = document.getElementById('chat-box');
-            const userMsg = `
-                <div class="chat-bubble flex items-start gap-2 justify-end">
-                    <div class="bg-purple-800 bg-opacity-90 text-sm p-3 rounded-2xl rounded-tr-none max-w-[80%] border border-purple-600">
-                        ${text}
-                    </div>
-                    <div class="bg-purple-500 rounded-full w-8 h-8 flex items-center justify-center text-sm shadow-md">👤</div>
-                </div>
-            `;
-            chatBox.innerHTML += userMsg;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        // Ranglar palitrasi
+        const colors = {
+            planet: ['#38bdf8', '#34d399', '#fbbf24', '#f43f5e', '#a855f7'],
+            sun: '#fbbf24',
+            trail: 'rgba(168, 85, 247, 0.15)'
+        };
 
-        // Botning javobi
-        function appendBotMessage(text, isWin = false, isLose = false) {
-            const chatBox = document.getElementById('chat-box');
-            let emoji = "🔮";
-            if(isWin) emoji = "🏆";
-            if(isLose) emoji = "💀";
-
-            const botMsg = `
-                <div class="chat-bubble flex items-start gap-2">
-                    <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center text-sm shadow-md">${emoji}</div>
-                    <div class="bg-purple-900 bg-opacity-60 text-sm p-3 rounded-2xl rounded-tl-none max-w-[80%] border border-purple-800">
-                        ${text}
-                    </div>
-                </div>
-            `;
-            chatBox.innerHTML += botMsg;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            speak(text);
-        }
-
-        // Tayyor tezkor savollarni yuborish
-        function askPreset(questionText) {
-            handleLogic(questionText);
-        }
-
-        // Savol jo'natilganda
-        function handleQuestion(e) {
-            e.preventDefault();
-            const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if (!text) return;
-            handleLogic(text);
-            input.value = '';
-        }
-
-        // O'yin mantiqiy jarayoni (AI o'rniga aqlli qidiruv algoritmi)
-        function handleLogic(text) {
-            appendUserMessage(text);
-            const query = text.toLowerCase();
-
-            // To'g'ri topilganini tekshirish (Taxmin)
-            if (query.includes(secretCharacter.name.toLowerCase()) || (secretCharacter.alias && query.includes(secretCharacter.alias))) {
-                appendBotMessage(`URRRAA! 🎉 Siz mutlaqo to'g'ri topdingiz! Men haqiqatdan ham **${secretCharacter.name}**ni o'ylagan edim!`, true);
-                triggerWinEffects();
-                score += (lives * 10);
-                document.getElementById('score').innerText = score;
-                return;
+        // Jism (Yulduz/Sayyora) klassi
+        class CelestialBody {
+            constructor(x, y, vx, vy, mass, color, isStatic = false) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.mass = mass;
+                this.radius = Math.max(4, Math.sqrt(mass) * 1.5);
+                this.color = color;
+                this.isStatic = isStatic;
+                this.history = [];
             }
 
-            // Agar u o'yinchi shunchaki nom taxmin qilib xato qilgan bo'lsa
-            let isAnyCharMatched = characters.some(c => query.includes(c.name.toLowerCase()) && c.name !== secretCharacter.name);
-            
-            if (isAnyCharMatched) {
-                lives--;
-                updateHearts();
-                if (lives <= 0) {
-                    appendBotMessage(`Afsus, siz mag'lub bo'ldingiz! 💀 Men o'ylagan qahramon: **${secretCharacter.name}** edi. Keyingi safar albatta omadingiz keladi!`, false, true);
-                    return;
+            draw() {
+                // Izlarni (trail) chizish
+                if (showTrails && this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 0.8;
+                    ctx.globalAlpha = 0.4;
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let i = 1; i < this.history.length; i++) {
+                        ctx.lineTo(this.history[i].x, this.history[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.globalAlpha = 1.0;
                 }
-                appendBotMessage(`Yo'q, bu ${text} emas! Bitta imkoniyatingiz kamaydi. Diqqatliroq bo'ling! ❌`);
-                return;
+
+                // Glow (Neon nur) effekti
+                ctx.shadowBlur = this.radius * 1.5;
+                ctx.shadowColor = this.color;
+
+                // Jismning o'zini chizish
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                // Glow effektini tozalash (boshqa elementlarga ta'sir qilmasligi uchun)
+                ctx.shadowBlur = 0;
             }
 
-            // Savollarga "HA" yoki "YO'Q" javobi mantiqi
-            let matched = false;
-            for (let tag of secretCharacter.tags) {
-                if (query.includes(tag) || (tag === "tirik" && query.includes("yashaydi")) || (tag === "kino" && query.includes("film"))) {
-                    matched = true;
-                    break;
+            update() {
+                if (!this.isStatic) {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Harakat tarixini saqlash (Trail uchun)
+                    this.history.push({ x: this.x, y: this.y });
+                    if (this.history.length > 80) {
+                        this.history.shift();
+                    }
                 }
             }
-
-            setTimeout(() => {
-                if (matched) {
-                    appendBotMessage("Ha! Savolingizga ijobiy javob beraman. Juda yaqin kelyapsiz... 🤔");
-                } else {
-                    appendBotMessage("Yo'q, bunday xususiyati yo'q. Boshqa yo'nalishdan izlab ko'ring! 🧐");
-                }
-            }, 600);
         }
 
-        // G'oliblik salyuti
-        function triggerWinEffects() {
-            confetti({
-                particleCount: 150,
-                spread: 80,
-                origin: { y: 0.6 }
+        // Gravitasiya hisob-kitoblari (Nyuton fizikasi)
+        function calculateGravity() {
+            for (let i = 0; i < bodies.length; i++) {
+                for (let j = 0; j < bodies.length; j++) {
+                    if (i === j) continue;
+
+                    const b1 = bodies[i];
+                    const b2 = bodies[j];
+
+                    const dx = b2.x - b1.x;
+                    const dy = b2.y - b1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // To'qnashib ketishning oldini olish va silliq harakat uchun minimal masofa
+                    if (distance < (b1.radius + b2.radius)) {
+                        // Agar judayam yaqin kelishsa, kichigi kattasiga yutiladi (qo'shiladi)
+                        if (b1.mass >= b2.mass && !b1.isStatic) {
+                            // Momentum saqlanish qonuni: m1*v1 + m2*v2 = (m1+m2)*v_yangi
+                            b1.vx = (b1.vx * b1.mass + b2.vx * b2.mass) / (b1.mass + b2.mass);
+                            b1.vy = (b1.vy * b1.mass + b2.vy * b2.mass) / (b1.mass + b2.mass);
+                            b1.mass += b2.mass;
+                            b1.radius = Math.max(4, Math.sqrt(b1.mass) * 1.5);
+                            bodies.splice(j, 1);
+                            if (j < i) i--;
+                        }
+                        continue;
+                    }
+
+                    // F = G * (m1 * m2) / r^2
+                    const force = (G * b1.mass * b2.mass) / (distance * distance);
+                    
+                    // Tezlanish a = F / m
+                    const ax = (force * (dx / distance)) / b1.mass;
+                    const ay = (force * (dy / distance)) / b1.mass;
+
+                    b1.vx += ax;
+                    b1.vy += ay;
+                }
+            }
+        }
+
+        // Asosiy Simulyatsiya Sikli
+        function loop() {
+            // Ekranni tozalash (lekin silliq animatsiya uchun juda xira fon bilan bo'yash)
+            ctx.fillStyle = 'rgba(3, 0, 8, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            calculateGravity();
+
+            // Jismlarni yangilash va chizish
+            bodies.forEach(body => {
+                body.update();
+                body.draw();
             });
+
+            // Agar sichqoncha bilan otish trayektoriyasi chizilayotgan bo'lsa
+            if (isDragging) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([5, 5]); // Chiziqli yo'nalish
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(currentX, currentY);
+                ctx.stroke();
+                ctx.setLineDash([]); // Oddiy chiziqqa qaytarish
+
+                // Yaratiladigan yangi sayyoraning joylashuvini ko'rsatish
+                ctx.beginPath();
+                ctx.arc(startX, startY, selectedMassType === 'sun' ? 15 : 6, 0, Math.PI * 2);
+                ctx.fillStyle = selectedMassType === 'sun' ? colors.sun : colors.planet[0];
+                ctx.fill();
+            }
+
+            requestAnimationFrame(loop);
         }
 
-        // O'yinni ilk bor yuklash
-        window.onload = startNewGame;
+        // Sichqoncha va Sensorli boshqaruv voqealari (Desktop & Mobile)
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function onStart(e) {
+            isDragging = true;
+            const coords = getCoords(e);
+            startX = coords.x;
+            startY = coords.y;
+            currentX = coords.x;
+            currentY = coords.y;
+        }
+
+        function onMove(e) {
+            if (!isDragging) return;
+            const coords = getCoords(e);
+            currentX = coords.x;
+            currentY = coords.y;
+        }
+
+        function onEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            // Tezlik vektori: Tortilgan masofaning teskari yo'nalishiga qarab otiladi
+            // 0.04 - sezgirlik koeffitsiyenti
+            const vx = (startX - currentX) * 0.04;
+            const vy = (startY - currentY) * 0.04;
+
+            const mass = selectedMassType === 'sun' ? 300 : 15;
+            const color = selectedMassType === 'sun' ? colors.sun : colors.planet[Math.floor(Math.random() * colors.planet.length)];
+            const isStatic = selectedMassType === 'sun'; // Yulduzlar harakatsiz turadi
+
+            bodies.push(new CelestialBody(startX, startY, vx, vy, mass, color, isStatic));
+        }
+
+        canvas.addEventListener('mousedown', onStart);
+        canvas.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        canvas.addEventListener('touchstart', onStart, { passive: true });
+        canvas.addEventListener('touchmove', onMove, { passive: true });
+        window.addEventListener('touchend', onEnd);
+
+        // Boshqaruv sozlamalari interfeysi bilan ishlash
+        const gravitySlider = document.getElementById('gravity-slider');
+        const gVal = document.getElementById('g-val');
+        gravitySlider.addEventListener('input', (e) => {
+            G = parseFloat(e.target.value);
+            gVal.innerText = G;
+        });
+
+        const trailsToggle = document.getElementById('trails-toggle');
+        trailsToggle.addEventListener('change', (e) => {
+            showTrails = e.target.checked;
+            if (!showTrails) {
+                bodies.forEach(b => b.history = []);
+            }
+        });
+
+        function setMassPreset(type) {
+            selectedMassType = type;
+            document.getElementById('btn-planet').className = type === 'planet' ? 'py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition' : 'py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition';
+            document.getElementById('btn-sun').className = type === 'sun' ? 'py-2 px-3 bg-purple-900 bg-opacity-50 border border-purple-500 text-xs font-bold rounded-lg transition' : 'py-2 px-3 bg-transparent border border-purple-800 hover:border-purple-600 text-xs font-bold rounded-lg text-gray-300 transition';
+        }
+
+        function clearCanvas() {
+            bodies = [];
+        }
+
+        // Tayyor koinot ssenariylari
+        function loadPreset(presetName) {
+            clearCanvas();
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            if (presetName === 'solar') {
+                // Markazda Quyosh
+                bodies.push(new CelestialBody(cx, cy, 0, 0, 400, colors.sun, true));
+                // 3 ta turli masofadagi barqaror aylanuvchi sayyoralar
+                // Orbita tezligi v = sqrt(G * M / r) formulasi asosida taxminan olingan
+                bodies.push(new CelestialBody(cx, cy - 100, 0.8, 0, 10, '#38bdf8'));
+                bodies.push(new CelestialBody(cx, cy - 160, 0.6, 0, 15, '#34d399'));
+                bodies.push(new CelestialBody(cx, cy - 220, 0.5, 0, 20, '#fbbf24'));
+            } 
+            else if (presetName === 'binary') {
+                // Bir-biri atrofida aylanadigan 2 ta yorqin yulduz
+                bodies.push(new CelestialBody(cx - 100, cy, 0, 0.45, 300, '#fbbf24'));
+                bodies.push(new CelestialBody(cx + 100, cy, 0, -0.45, 300, '#a855f7'));
+            } 
+            else if (presetName === 'chaos') {
+                // Bitta katta Quyosh va unga juda ko'p mayda kometalar
+                bodies.push(new CelestialBody(cx, cy, 0, 0, 500, colors.sun, true));
+                for(let i = 0; i < 25; i++) {
+                    const radius = 100 + Math.random() * 150;
+                    const angle = Math.random() * Math.PI * 2;
+                    const x = cx + Math.cos(angle) * radius;
+                    const y = cy + Math.sin(angle) * radius;
+                    
+                    // Quyoshga perpendikulyar tezlik berish (aylana bo'ylab harakatlanishi uchun)
+                    const speed = 0.5 + Math.random() * 0.4;
+                    const vx = -Math.sin(angle) * speed;
+                    const vy = Math.cos(angle) * speed;
+                    
+                    bodies.push(new CelestialBody(x, y, vx, vy, 2 + Math.random() * 3, colors.planet[Math.floor(Math.random() * colors.planet.length)]));
+                }
+            }
+        }
+
+        // Dasturni boshlash
+        loadPreset('solar');
+        loop();
     </script>
 </body>
 </html>
