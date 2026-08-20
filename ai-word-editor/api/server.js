@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const apiKey = process.env.OPENAI_API_KEY?.trim();
-const model = process.env.OPENAI_MODEL?.trim();
+const model = process.env.OPENAI_MODEL?.trim() || "gpt-5.6-luna";
 
 if (!apiKey) {
   console.warn("WARNING: OPENAI_API_KEY topilmadi. AI endpointlari ishlamaydi.");
