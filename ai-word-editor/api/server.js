@@ -5,13 +5,14 @@ import OpenAI from "openai";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-
+OPENAI_API_KEY = yangi API key
+OPENAI_MODEL = gpt-5.6-luna
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
-const apiKey = process.env.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?.trim();
-const model = process.env.gpt-5.6-luna?.trim();
+const apiKey = process.env.OPENAI_API_KEY?.trim();
+const model = process.env.OPENAI_MODEL?.trim();
 
 if (!apiKey) {
   console.warn("WARNING: OPENAI_API_KEY topilmadi. AI endpointlari ishlamaydi.");
