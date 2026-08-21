@@ -1,0 +1,1 @@
+Authentication and file persistence are enabled. Set DATA_DIR to a persistent mounted directory in Render so uploaded files and user accounts survive redeploys.
