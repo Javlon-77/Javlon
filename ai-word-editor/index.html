@@ -1,35 +1,37 @@
 <!doctype html>
 <html lang="uz">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Word Editor</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Word Studio</title><link rel="stylesheet" href="./style.css"></head>
 <body>
+<div class="app-shell">
   <header class="topbar">
-    <div><div class="brand">AI Word Editor</div><div class="sub">Matn, rasm, video va fayllarni bitta hujjatda tahrirlang</div></div>
-    <div class="top-actions">
-      <label class="upload-btn"><input id="fileInput" type="file" accept=".docx" />📄 Word ulash</label>
-      <label class="upload-btn"><input id="mediaInput" type="file" multiple accept="image/*,video/*,.pdf,.txt,.md,.csv,.json,.zip,.rar,.xlsx,.xls,.pptx,.ppt,.doc,.docx" />📎 Rasm / Video / Fayl</label>
-      <button id="imageBtn" class="ghost">✨ AI rasm yaratish</button>
-      <button id="newBtn" class="ghost">＋ Yangi hujjat</button>
-      <button id="downloadBtn" class="primary">⬇ Word yuklash</button>
-    </div>
+    <div class="brand"><div class="logo">AW</div><div><b>AI Word Studio</b><span>Matn, Word, rasm va video bilan ishlang</span></div></div>
+    <div class="user-area"><button id="loginBtn" class="outline">Kirish</button><button id="registerBtn" class="primary">Ro‘yxatdan o‘tish</button><div id="profile" class="profile hidden"><span id="profileEmail"></span><button id="logoutBtn">Chiqish</button></div></div>
   </header>
-  <main class="layout">
-    <section class="document-panel">
-      <div class="panel-head"><div><div class="panel-title">Hujjat</div><div id="fileName" class="file-name">Yangi hujjat.docx</div></div><div id="status" class="status">Tayyor</div></div>
-      <div id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Matn yozing yoki rasm/video/faylni shu yerga tashlang..."></div>
-      <div class="hint">📌 Rasm yoki videoni tanlasangiz, u kursor turgan joyga matn bilan birga hujjat ichiga qo‘shiladi. URL yozib qo‘yilmaydi.</div>
-    </section>
-    <aside class="chat-panel">
-      <div class="chat-head"><div class="ai-avatar">AI</div><div><div class="panel-title">AI yordamchi</div><div class="sub">Savol bering, tahrir qildiring yoki rasm yarating</div></div></div>
-      <div id="messages" class="messages"><div class="bubble ai">Salom! Matn yozing, rasm/video tashlang yoki “AI rasm yarat: ...” deb yozing.</div></div>
-      <div class="suggestions"><button data-prompt="Hujjatning qisqa mazmunini yozib ber.">Mazmunini ayt</button><button data-prompt="Hujjatni rasmiy va chiroyli uslubda qayta yoz.">Rasmiylashtir</button><button data-prompt="Hujjatga mos xulosa qo‘sh.">Xulosa qo‘sh</button></div>
-      <div class="composer"><textarea id="prompt" rows="3" placeholder="Masalan: AI rasm yarat: Toshkentning futuristik shahri..."></textarea><button id="sendBtn" class="send">Yuborish ➜</button></div>
+  <div class="main-wrap">
+    <aside class="sidebar">
+      <button class="side-item active" data-panel="editorPanel">✍️ <span>Editor</span></button>
+      <button class="side-item" data-panel="filesPanel">📁 <span>Mening fayllarim</span></button>
+      <button class="side-item" data-panel="historyPanel">💬 <span>Chat tarixi</span></button>
+      <div class="side-spacer"></div>
+      <div class="side-tip">AI yordamchi<br><small>Hujjatingizni yozing, tahrirlang va saqlang.</small></div>
     </aside>
-  </main>
-  <script src="./app.js"></script>
-</body>
-</html>
+    <main class="content">
+      <section id="editorPanel" class="panel active-panel">
+        <div class="toolbar">
+          <div class="toolbar-left"><label class="tool"><input id="fileInput" type="file" accept=".docx">📄 Word ulash</label><label class="tool"><input id="mediaInput" type="file" multiple accept="image/*,video/*,.pdf,.txt,.md,.csv,.json,.zip,.rar,.xlsx,.xls,.pptx,.ppt,.doc,.docx">📎 Rasm / Video / Fayl</label><button id="imageBtn" class="tool">✨ AI rasm</button></div>
+          <div class="toolbar-right"><button id="saveBtn" class="save">💾 O‘zgarishlarni saqlash</button><button id="downloadBtn" class="primary">⬇ Yuklab olish</button><button id="newBtn" class="outline">＋ Yangi</button></div>
+        </div>
+        <div class="editor-card">
+          <div class="doc-head"><div><div class="doc-title">Hujjat</div><div id="fileName" class="file-name">Yangi hujjat.docx</div></div><div id="status" class="status">Tayyor</div></div>
+          <div id="editor" class="editor" contenteditable="true" data-placeholder="Matn yozing yoki rasm/video/faylni shu yerga tashlang..."></div>
+        </div>
+      </section>
+      <section id="filesPanel" class="panel"><div class="section-head"><div><h2>Mening fayllarim</h2><p>Ulangan Word hujjatlaringiz va oxirgi saqlangan o‘zgarishlar.</p></div><button id="refreshFiles" class="outline">↻ Yangilash</button></div><div id="filesList" class="files-grid"><div class="empty">Kirishdan keyin fayllaringiz shu yerda chiqadi.</div></div></section>
+      <section id="historyPanel" class="panel"><div class="section-head"><div><h2>Chat tarixi</h2><p>AI bilan yozishgan suhbatlaringiz shu qurilmada ko‘rinadi.</p></div></div><div id="historyList" class="history-list"><div class="empty">Hali suhbat yo‘q.</div></div></section>
+    </main>
+    <aside class="chat-panel"><div class="chat-top"><div class="ai-dot">AI</div><div><b>AI yordamchi</b><span id="chatSub">Hujjatni tahrirlash, savol berish yoki rasm yaratish.</span></div></div><div id="messages" class="messages"><div class="bubble ai">Salom! Word faylingizni ulang, matnni o‘zgartiring va kerak bo‘lsa “💾 O‘zgarishlarni saqlash” tugmasini bosing.</div></div><div class="suggestions"><button data-prompt="Hujjatni rasmiy va chiroyli uslubda qayta yoz.">Rasmiylashtir</button><button data-prompt="Hujjatga mos xulosa qo‘sh.">Xulosa qo‘sh</button><button data-prompt="Hujjatning qisqa mazmunini yoz.">Mazmuni</button></div><div class="composer"><textarea id="prompt" rows="3" placeholder="Masalan: 2-paragrafni qisqartir yoki AI rasm yarat: futuristik Toshkent"></textarea><button id="sendBtn" class="send">Yuborish ➜</button></div></aside>
+  </div>
+</div>
+<div id="authModal" class="modal hidden"><div class="modal-card"><button id="closeModal" class="modal-close">×</button><div class="modal-logo">AW</div><h2 id="authTitle">Kirish</h2><p id="authDesc">AI Word Studio hisobingizga kiring.</p><input id="authEmail" type="email" placeholder="Email"><input id="authPassword" type="password" placeholder="Parol (kamida 6 belgi)"><button id="authSubmit" class="primary full">Kirish</button><div id="authSwitch" class="auth-switch">Hisobingiz yo‘qmi? Ro‘yxatdan o‘ting</div></div></div>
+<script src="./app.js"></script>
+</body></html>
