@@ -1,0 +1,1 @@
+AI Word Studio now includes authentication, personal files, chat history, and save-changes controls.
