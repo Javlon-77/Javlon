@@ -1,0 +1,1 @@
+Runtime storage. Configure DATA_DIR to a persistent Render Disk path.

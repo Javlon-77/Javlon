@@ -1,0 +1,1 @@
+Set DATA_DIR to a persistent Render Disk mount path. Without persistent storage, uploaded files and the JSON account store can be lost on service replacement/redeploy.
