@@ -11,18 +11,8 @@ dotenv.config();
 const app = express();
 const port = Number(process.env.PORT || 3000);
 
-// ===============================
-// GROQ CONFIG
-// ===============================
 const apiKey = process.env.GROQ_API_KEY?.trim();
-const model =
-  process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
-
-if (!apiKey) {
-  console.warn(
-    "WARNING: GROQ_API_KEY topilmadi. AI endpointlari ishlamaydi."
-  );
-}
+const model = process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 
 const client = apiKey
   ? new OpenAI({
@@ -31,9 +21,10 @@ const client = apiKey
     })
   : null;
 
-// ===============================
-// CORS
-// ===============================
+if (!apiKey) {
+  console.warn("WARNING: GROQ_API_KEY topilmadi.");
+}
+
 const allowed = (process.env.ALLOWED_ORIGINS || "*")
   .split(",")
   .map((x) => x.trim())
@@ -42,58 +33,37 @@ const allowed = (process.env.ALLOWED_ORIGINS || "*")
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowed.includes("*") ||
-        allowed.includes(origin)
-      ) {
+      if (!origin || allowed.includes("*") || allowed.includes(origin)) {
         return callback(null, true);
       }
-
       return callback(new Error("Origin not allowed"));
     },
   })
 );
 
-// ===============================
-// JSON
-// ===============================
 app.use(express.json({ limit: "10mb" }));
 
-// ===============================
-// FILE UPLOAD
-// ===============================
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 15 * 1024 * 1024,
-  },
+  limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const name = file.originalname.toLowerCase();
-
-    if (name.endsWith(".docx")) {
+    if (file.originalname.toLowerCase().endsWith(".docx")) {
       return cb(null, true);
     }
-
     cb(new Error("Faqat .docx Word fayl yuklash mumkin."));
   },
 });
 
-// ===============================
-// HOME
-// ===============================
 app.get("/", (_req, res) => {
   res.json({
     ok: true,
     service: "AI Word Editor API",
     provider: "Groq",
     model,
+    aiConfigured: Boolean(client),
   });
 });
 
-// ===============================
-// HEALTH
-// ===============================
 app.get("/health", (_req, res) => {
   res.json({
     ok: true,
@@ -103,113 +73,72 @@ app.get("/health", (_req, res) => {
   });
 });
 
-// ===============================
-// EXTRACT DOCX
-// ===============================
 app.post("/api/extract", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        error: "Word fayl yuborilmadi.",
-      });
+      return res.status(400).json({ error: "Word fayl yuborilmadi." });
     }
 
-    const result = await mammoth.extractRawText({
-      buffer: req.file.buffer,
-    });
-
-    return res.json({
-      text: result.value || "",
-    });
+    const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+    return res.json({ text: result.value || "" });
   } catch (error) {
     console.error("EXTRACT ERROR:", error);
-
     return res.status(500).json({
-      error: "Word faylni o‘qib bo‘lmadi.",
+      error: error?.message || "Word faylni o‘qib bo‘lmadi.",
     });
   }
 });
 
-// ===============================
-// CLEAN JSON
-// ===============================
 function cleanJson(text) {
-  return text
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
+  let value = String(text || "").trim();
+  value = value.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+
+  const first = value.indexOf("{");
+  const last = value.lastIndexOf("}");
+  if (first !== -1 && last > first) {
+    value = value.slice(first, last + 1);
+  }
+  return value;
 }
 
-// ===============================
-// AI CHAT
-// ===============================
 app.post("/api/chat", async (req, res) => {
   try {
     if (!client) {
       return res.status(503).json({
-        error: "GROQ_API_KEY serverda sozlanmagan.",
+        error: "GROQ_API_KEY Render Environment Variables ichida sozlanmagan.",
       });
     }
 
-    const documentText = String(
-      req.body?.documentText || ""
-    );
-
-    const instruction = String(
-      req.body?.instruction || ""
-    ).trim();
+    const documentText = String(req.body?.documentText || "");
+    const instruction = String(req.body?.instruction || "").trim();
 
     if (!instruction) {
-      return res.status(400).json({
-        error: "Buyruq yoki savol yuboring.",
-      });
+      return res.status(400).json({ error: "Buyruq yoki savol yuboring." });
     }
 
-    const input = `
-Siz AI Word Editor dasturining yordamchisisiz.
+    const system = `Siz AI Word Editor yordamchisisiz. Foydalanuvchi o‘zbek tilida yozishi mumkin.
 
-Foydalanuvchi o‘zbek tilida yozishi mumkin.
+Qoidalar:
+- Agar foydalanuvchi hujjatni o‘zgartirishni so‘rasa, changed=true bo‘lsin va editedDocument ichida BUTUN yangi hujjat matni bo‘lsin.
+- Agar foydalanuvchi faqat savol bersa yoki mazmun so‘rasa, changed=false bo‘lsin va editedDocument bo‘sh bo‘lsin.
+- Faqat so‘ralgan o‘zgarishni bajaring va asl mazmunni imkon qadar saqlang.
+- Javob qisqa, aniq va o‘zbek tilida bo‘lsin.
+- FAQAT JSON qaytaring. Markdown yoki qo‘shimcha matn yozmang.
+- JSON shakli: {"changed":true,"answer":"...","editedDocument":"..."}`;
 
-Vazifa:
+    const user = `HOZIRGI HUJJAT:\n${documentText}\n\nFOYDALANUVCHI BUYRUG‘I:\n${instruction}`;
 
-1. Foydalanuvchi hujjatni tahrirlashni so‘rasa:
-   - changed=true qiling
-   - editedDocument ichida BUTUN hujjatning yangi to‘liq matnini qaytaring.
-
-2. Foydalanuvchi faqat savol bersa:
-   - changed=false qiling
-   - editedDocument bo‘sh bo‘lsin.
-
-3. Hujjatni tahrirlashda:
-   - asl mazmunni imkon qadar saqlang;
-   - faqat foydalanuvchi so‘ragan o‘zgarishni bajaring.
-
-4. Javob qisqa va tushunarli o‘zbek tilida bo‘lsin.
-
-5. FAQAT quyidagi JSON formatida javob bering:
-
-{
-  "changed": true,
-  "answer": "...",
-  "editedDocument": "..."
-}
-
-HOZIRGI HUJJAT:
-${documentText}
-
-FOYDALANUVCHI BUYRUG‘I:
-${instruction}
-`;
-
-    const response = await client.responses.create({
+    const response = await client.chat.completions.create({
       model,
-      input,
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
     });
 
-    const raw = response.output_text || "";
-
+    const raw = response.choices?.[0]?.message?.content || "";
     let data;
 
     try {
@@ -217,137 +146,70 @@ ${instruction}
     } catch (error) {
       console.error("JSON PARSE ERROR:", error);
       console.error("AI RAW:", raw);
-
       return res.status(502).json({
-        error: "AI javobini to‘g‘ri JSON formatida qaytarmadi.",
+        error: "AI javobini JSON formatida qaytarmadi.",
       });
     }
 
     return res.json({
       changed: Boolean(data.changed),
-
-      answer: String(
-        data.answer || "Javob tayyor."
-      ),
-
-      editedDocument: String(
-        data.editedDocument || ""
-      ),
+      answer: String(data.answer || "Javob tayyor."),
+      editedDocument: String(data.editedDocument || ""),
     });
   } catch (error) {
     console.error("GROQ CHAT ERROR:", error);
 
-    return res.status(500).json({
-      error:
-        error?.message ||
-        "Groq AI bilan bog‘lanishda xatolik yuz berdi.",
+    const status = Number(error?.status) || 500;
+    return res.status(status >= 400 && status < 600 ? status : 500).json({
+      error: error?.error?.message || error?.message || "Groq AI bilan bog‘lanishda xatolik yuz berdi.",
     });
   }
 });
 
-// ===============================
-// EXPORT DOCX
-// ===============================
 app.post("/api/export", async (req, res) => {
   try {
-    const text = String(
-      req.body?.text || ""
+    const text = String(req.body?.text || "");
+    const safeName = String(req.body?.fileName || "AI-Word-Hujjat.docx")
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/\.docx$/i, "") || "AI-Word-Hujjat";
+
+    const lines = text.split(/\r?\n/);
+    const paragraphs = lines.map(
+      (line) => new Paragraph({ children: [new TextRun(line)] })
     );
 
-    const fileName =
-      String(
-        req.body?.fileName ||
-          "AI-Word-Hujjat.docx"
-      )
-        .replace(/[^a-zA-Z0-9._-]/g, "_")
-        .replace(/\.docx$/i, "") ||
-      "AI-Word-Hujjat";
-
-    const paragraphs = text
-      .split(/\r?\n/)
-      .map(
-        (line) =>
-          new Paragraph({
-            children: [
-              new TextRun(line),
-            ],
-          })
-      );
-
-    if (paragraphs.length === 0) {
-      paragraphs.push(
-        new Paragraph({
-          children: [new TextRun("")],
-        })
-      );
-    }
-
     const document = new Document({
-      sections: [
-        {
-          children: paragraphs,
-        },
-      ],
+      sections: [{ children: paragraphs.length ? paragraphs : [new Paragraph("")] }],
     });
 
-    const buffer =
-      await Packer.toBuffer(document);
+    const buffer = await Packer.toBuffer(document);
 
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     );
-
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${fileName}-AI.docx"`
+      `attachment; filename="${safeName}-AI.docx"`
     );
 
     return res.send(buffer);
   } catch (error) {
     console.error("EXPORT ERROR:", error);
-
     return res.status(500).json({
-      error: "Word fayl yaratilmadi.",
+      error: error?.message || "Word fayl yaratilmadi.",
     });
   }
 });
 
-// ===============================
-// ERROR HANDLER
-// ===============================
-app.use(
-  (error, _req, res, _next) => {
-    console.error(
-      "SERVER ERROR:",
-      error
-    );
+app.use((error, _req, res, _next) => {
+  console.error("SERVER ERROR:", error);
+  res.status(400).json({ error: error?.message || "Server xatosi." });
+});
 
-    res.status(400).json({
-      error:
-        error?.message ||
-        "Server xatosi.",
-    });
-  }
-);
-
-// ===============================
-// START SERVER
-// ===============================
-app.listen(
-  port,
-  "0.0.0.0",
-  () => {
-    console.log(
-      `AI Word Editor API ishga tushdi: port ${port}`
-    );
-
-    console.log(
-      `Provider: Groq`
-    );
-
-    console.log(
-      `Model: ${model}`
-    );
-  }
-);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`AI Word Editor API ishga tushdi: port ${port}`);
+  console.log(`Provider: Groq`);
+  console.log(`Model: ${model}`);
+  console.log(`AI configured: ${Boolean(client)}`);
+});
