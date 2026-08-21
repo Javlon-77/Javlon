@@ -89,7 +89,6 @@ fileInput.addEventListener("change", async () => {
     setStatus("Word strukturasi o‘qilmoqda...");
     const form = new FormData();
     form.append("file", file);
-
     const response = await fetch(api("/api/extract"), { method: "POST", body: form });
     const data = await readResponse(response);
 
@@ -130,13 +129,8 @@ async function sendPrompt(text = promptEl.value) {
     const response = await fetch(api("/api/chat"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        documentId: currentDocumentId,
-        documentText: editor.value,
-        instruction,
-      }),
+      body: JSON.stringify({ documentId: currentDocumentId, documentText: editor.value, instruction }),
     });
-
     const data = await readResponse(response);
     loading(false);
 
@@ -167,23 +161,17 @@ promptEl.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelectorAll("[data-prompt]").forEach((button) => {
-  button.addEventListener("click", () => sendPrompt(button.dataset.prompt));
-});
+document.querySelectorAll("[data-prompt]").forEach((button) => button.addEventListener("click", () => sendPrompt(button.dataset.prompt)));
 
 downloadBtn.addEventListener("click", async () => {
   try {
-    if (!originalWordFileLoaded || !currentDocumentId) {
-      throw new Error("Avval asl .docx Word faylni ulang. Shunda rasm, diagramma va formatlar saqlanadi.");
-    }
-
+    if (!originalWordFileLoaded || !currentDocumentId) throw new Error("Avval asl .docx Word faylni ulang. Shunda rasm, diagramma va formatlar saqlanadi.");
     setStatus("Asl Word fayl saqlangan holda tayyorlanmoqda...");
     const response = await fetch(api("/api/export"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ documentId: currentDocumentId, text: editor.value, fileName: currentFileName }),
     });
-
     await readResponse(response);
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
