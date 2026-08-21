@@ -8,10 +8,11 @@
 </head>
 <body>
   <header class="topbar">
-    <div><div class="brand">AI Word Editor</div><div class="sub">Word hujjatingiz bilan AI orqali ishlang</div></div>
+    <div><div class="brand">AI Word Editor</div><div class="sub">Matn, rasm, video va fayllarni bitta hujjatda tahrirlang</div></div>
     <div class="top-actions">
       <label class="upload-btn"><input id="fileInput" type="file" accept=".docx" />📄 Word ulash</label>
       <label class="upload-btn"><input id="mediaInput" type="file" multiple accept="image/*,video/*,.pdf,.txt,.md,.csv,.json,.zip,.rar,.xlsx,.xls,.pptx,.ppt,.doc,.docx" />📎 Rasm / Video / Fayl</label>
+      <button id="imageBtn" class="ghost">✨ AI rasm yaratish</button>
       <button id="newBtn" class="ghost">＋ Yangi hujjat</button>
       <button id="downloadBtn" class="primary">⬇ Word yuklash</button>
     </div>
@@ -19,15 +20,14 @@
   <main class="layout">
     <section class="document-panel">
       <div class="panel-head"><div><div class="panel-title">Hujjat</div><div id="fileName" class="file-name">Yangi hujjat.docx</div></div><div id="status" class="status">Tayyor</div></div>
-      <textarea id="editor" spellcheck="true" placeholder="Word hujjatingizning matni shu yerda ko'rinadi..."></textarea>
-      <div class="hint">Rasm, video va boshqa fayllarni 📎 tugmasi orqali bir nechta qilib qo‘shishingiz mumkin.</div>
-      <div id="attachments" class="attachments"></div>
+      <div id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Matn yozing yoki rasm/video/faylni shu yerga tashlang..."></div>
+      <div class="hint">📌 Rasm yoki videoni tanlasangiz, u kursor turgan joyga matn bilan birga hujjat ichiga qo‘shiladi. URL yozib qo‘yilmaydi.</div>
     </section>
     <aside class="chat-panel">
-      <div class="chat-head"><div class="ai-avatar">AI</div><div><div class="panel-title">AI yordamchi</div><div class="sub">Savol bering yoki hujjatni tahrirlashni buyuring</div></div></div>
-      <div id="messages" class="messages"><div class="bubble ai">Salom! Word faylni ulang yoki rasm, video va fayl qo‘shing. Keyin savol bering yoki tahrir buyuring.</div></div>
+      <div class="chat-head"><div class="ai-avatar">AI</div><div><div class="panel-title">AI yordamchi</div><div class="sub">Savol bering, tahrir qildiring yoki rasm yarating</div></div></div>
+      <div id="messages" class="messages"><div class="bubble ai">Salom! Matn yozing, rasm/video tashlang yoki “AI rasm yarat: ...” deb yozing.</div></div>
       <div class="suggestions"><button data-prompt="Hujjatning qisqa mazmunini yozib ber.">Mazmunini ayt</button><button data-prompt="Hujjatni rasmiy va chiroyli uslubda qayta yoz.">Rasmiylashtir</button><button data-prompt="Hujjatga mos xulosa qo‘sh.">Xulosa qo‘sh</button></div>
-      <div class="composer"><textarea id="prompt" rows="3" placeholder="Buyruq yoki savolingiz..."></textarea><button id="sendBtn" class="send">Yuborish ➜</button></div>
+      <div class="composer"><textarea id="prompt" rows="3" placeholder="Masalan: AI rasm yarat: Toshkentning futuristik shahri..."></textarea><button id="sendBtn" class="send">Yuborish ➜</button></div>
     </aside>
   </main>
   <script src="./app.js"></script>
