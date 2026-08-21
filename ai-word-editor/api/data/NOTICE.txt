@@ -1,0 +1,1 @@
+This directory is runtime storage. Use a persistent Render Disk and DATA_DIR in production.
