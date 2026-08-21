@@ -15,6 +15,8 @@ const apiKey = process.env.GROQ_API_KEY?.trim();
 const model = process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 const client = apiKey ? new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" }) : null;
 
+if (!apiKey) console.warn("WARNING: GROQ_API_KEY topilmadi.");
+
 const allowed = (process.env.ALLOWED_ORIGINS || "*").split(",").map((x) => x.trim()).filter(Boolean);
 app.use(cors({ origin: (origin, callback) => {
   if (!origin || allowed.includes("*") || allowed.includes(origin)) return callback(null, true);
@@ -31,15 +33,15 @@ const upload = multer({
   },
 });
 
-// Original DOCX fayllarini vaqtincha saqlaymiz. Shu sababli export paytida
-// rasm, diagramma, jadval, shrift va boshqa Word XML qismlari qayta yaratilmaydi.
+// Original DOCX ZIP paketini vaqtincha saqlaymiz. Export paytida paket qayta
+// yaratilmaydi: rasm, diagramma, jadval, grafik va boshqa Word obyektlari saqlanadi.
 const documents = new Map();
 const MAX_DOCUMENTS = 100;
 const DOCUMENT_TTL = 2 * 60 * 60 * 1000;
 
 function rememberDocument(buffer, fileName) {
   const id = crypto.randomUUID();
-  documents.set(id, { buffer, fileName, updatedAt: Date.now() });
+  documents.set(id, { buffer, fileName, updatedAt: Date.now(), editedText: null });
   while (documents.size > MAX_DOCUMENTS) documents.delete(documents.keys().next().value);
   return id;
 }
@@ -57,9 +59,7 @@ function getDocument(id) {
 
 setInterval(() => {
   const now = Date.now();
-  for (const [id, item] of documents) {
-    if (now - item.updatedAt > DOCUMENT_TTL) documents.delete(id);
-  }
+  for (const [id, item] of documents) if (now - item.updatedAt > DOCUMENT_TTL) documents.delete(id);
 }, 30 * 60 * 1000).unref();
 
 app.get("/", (_req, res) => res.json({ ok: true, service: "AI Word Editor API", provider: "Groq", model, aiConfigured: Boolean(client) }));
@@ -95,7 +95,6 @@ app.post("/api/chat", async (req, res) => {
     if (!instruction) return res.status(400).json({ error: "Buyruq yoki savol yuboring." });
 
     const system = `Siz professional AI Word Editor yordamchisisiz.
-
 Muhim qoidalar:
 - Word hujjatidagi diagramma, rasm, jadval, grafik, SmartArt, shakl yoki boshqa obyektlarni hech qachon matn bilan almashtirmang.
 - Diagramma ko‘rinishini tasvirlab, soxta ASCII diagramma yoki g‘alati belgilar yaratmang.
@@ -121,8 +120,9 @@ Muhim qoidalar:
       return res.status(502).json({ error: "AI javobini JSON formatida qaytarmadi." });
     }
 
-    if (data.changed && documentId && getDocument(documentId)) {
-      documents.get(documentId).editedText = String(data.editedDocument || "");
+    if (data.changed && documentId) {
+      const item = getDocument(documentId);
+      if (item) item.editedText = String(data.editedDocument || "");
     }
 
     return res.json({ changed: Boolean(data.changed), answer: String(data.answer || "Javob tayyor."), editedDocument: String(data.editedDocument || ""), documentId });
@@ -137,10 +137,6 @@ function escapeXml(value) {
   return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
-function xmlText(value) {
-  return String(value || "").replace(/<w:tab\s*\/?>(?:<\/w:tab>)?/g, "\t");
-}
-
 function getParagraphs(xml) {
   const paragraphs = [];
   const paragraphRegex = /<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g;
@@ -150,14 +146,12 @@ function getParagraphs(xml) {
     const texts = [];
     const textRegex = /<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/g;
     let textMatch;
-    while ((textMatch = textRegex.exec(paragraphXml))) texts.push(xmlText(textMatch[1]).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"));
-    paragraphs.push({ start: match.index, end: paragraphRegex.lastIndex, xml: paragraphXml, texts });
+    while ((textMatch = textRegex.exec(paragraphXml))) {
+      texts.push(textMatch[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">"));
+    }
+    paragraphs.push({ xml: paragraphXml, texts });
   }
   return paragraphs;
-}
-
-function extractStructuredText(xml) {
-  return getParagraphs(xml).map((p) => p.texts.join("")).join("\n");
 }
 
 function replaceParagraphText(paragraphXml, text) {
@@ -170,13 +164,12 @@ function replaceParagraphText(paragraphXml, text) {
 }
 
 function applyTextWithoutDestroyingWordObjects(xml, editedText) {
-  const paragraphs = getParagraphs(xml);
-  if (!paragraphs.length) return xml;
+  if (!getParagraphs(xml).length) return xml;
   const newParagraphs = String(editedText || "").split(/\r?\n/);
   let paragraphIndex = 0;
   return xml.replace(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g, (paragraphXml) => {
-    const originalHasText = /<w:t(?:\s[^>]*)?>[\s\S]*?<\/w:t>/.test(paragraphXml);
-    if (!originalHasText) return paragraphXml; // diagram/shape-only paragraph untouched
+    // Obyektga tegishli, matnsiz paragrafni butunlay o‘z holida qoldiramiz.
+    if (!/<w:t(?:\s[^>]*)?>[\s\S]*?<\/w:t>/.test(paragraphXml)) return paragraphXml;
     const text = newParagraphs[paragraphIndex++] ?? "";
     return replaceParagraphText(paragraphXml, text);
   });
@@ -187,8 +180,7 @@ async function buildPreservedDocx(item) {
   const documentFile = zip.file("word/document.xml");
   if (!documentFile) throw new Error("DOCX document.xml topilmadi.");
   const xml = await documentFile.async("string");
-  const updatedXml = applyTextWithoutDestroyingWordObjects(xml, item.editedText ?? "");
-  zip.file("word/document.xml", updatedXml);
+  zip.file("word/document.xml", applyTextWithoutDestroyingWordObjects(xml, item.editedText ?? ""));
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
@@ -196,16 +188,14 @@ app.post("/api/export", async (req, res) => {
   try {
     const documentId = String(req.body?.documentId || "");
     const item = getDocument(documentId);
-    if (item) {
-      if (typeof req.body?.text === "string") item.editedText = req.body.text;
-      const buffer = await buildPreservedDocx(item);
-      const baseName = String(req.body?.fileName || item.fileName || "AI-Word-Hujjat.docx").replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.docx$/i, "") || "AI-Word-Hujjat";
-      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-      res.setHeader("Content-Disposition", `attachment; filename="${baseName}-AI.docx"`);
-      return res.send(buffer);
-    }
+    if (!item) return res.status(400).json({ error: "Original Word fayl sessiyasi topilmadi. Word faylni qayta ulang." });
 
-    return res.status(400).json({ error: "Original Word fayl sessiyasi topilmadi. Word faylni qayta ulang." });
+    if (typeof req.body?.text === "string") item.editedText = req.body.text;
+    const buffer = await buildPreservedDocx(item);
+    const baseName = String(req.body?.fileName || item.fileName || "AI-Word-Hujjat.docx").replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.docx$/i, "") || "AI-Word-Hujjat";
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", `attachment; filename="${baseName}-AI.docx"`);
+    return res.send(buffer);
   } catch (error) {
     console.error("EXPORT ERROR:", error);
     return res.status(500).json({ error: error?.message || "Word fayl yaratilmadi." });
