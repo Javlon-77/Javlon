@@ -11,52 +11,279 @@ import path from "node:path";
 import { Document, Packer, Paragraph, TextRun, ImageRun } from "docx";
 
 dotenv.config();
-const app=express();
-const port=Number(process.env.PORT||3000);
-const groqKey=process.env.GROQ_API_KEY?.trim();
-const openaiKey=process.env.OPENAI_API_KEY?.trim();
-const model=process.env.GROQ_MODEL?.trim()||"openai/gpt-oss-120b";
-const textClient=groqKey?new OpenAI({apiKey:groqKey,baseURL:"https://api.groq.com/openai/v1"}):null;
-const imageClient=openaiKey?new OpenAI({apiKey:openaiKey}):null;
-app.use(cors({origin:true}));
-app.use(express.json({limit:"70mb"}));
-const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024},fileFilter:(_r,f,cb)=>String(f.originalname||"").toLowerCase().endsWith(".docx")?cb(null,true):cb(new Error("Faqat .docx Word fayl yuklash mumkin."))});
 
-const dataDir=process.env.DATA_DIR||path.join(process.cwd(),"data"),filesDir=path.join(dataDir,"files"),indexFile=path.join(dataDir,"index.json");
-fs.mkdirSync(filesDir,{recursive:true});
-function loadIndex(){try{const v=JSON.parse(fs.readFileSync(indexFile,"utf8"));return Array.isArray(v)?v:[]}catch{return[]}}
-function saveIndex(v){fs.writeFileSync(indexFile,JSON.stringify(v.slice(0,200),null,2),"utf8")}
-let files=loadIndex();
-const safeName=n=>String(n||"AI-Word-Hujjat.docx").replace(/[<>:\"/\\|?*\x00-\x1F]/g,"_").trim()||"AI-Word-Hujjat.docx";
-const filePath=id=>path.join(filesDir,`${String(id).replace(/[^a-zA-Z0-9_-]/g,"")}.docx`);
-const getMeta=id=>files.find(x=>x.id===String(id||""))||null;
-function upsertMeta(m){files=files.filter(x=>x.id!==m.id);files.unshift(m);saveIndex(files)}
+const app = express();
+const port = Number(process.env.PORT || 3000);
+const groqKey = process.env.GROQ_API_KEY?.trim();
+const model = process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
+const textClient = groqKey ? new OpenAI({ apiKey: groqKey, baseURL: "https://api.groq.com/openai/v1" }) : null;
 
-app.get("/",(_r,res)=>res.json({ok:true,service:"AI Word Editor API",textAI:Boolean(textClient),imageAI:Boolean(imageClient),authRequired:false}));
-app.get("/health",(_r,res)=>res.json({ok:true,aiConfigured:Boolean(textClient),imageConfigured:Boolean(imageClient),provider:"Groq + OpenAI Images",model,authRequired:false}));
-app.get("/api/files",(_r,res)=>res.json({files:files.filter(x=>fs.existsSync(filePath(x.id)))}));
+app.use(cors({ origin: true }));
+app.use(express.json({ limit: "70mb" }));
 
-app.post("/api/extract",upload.single("file"),async(req,res)=>{try{if(!req.file)return res.status(400).json({error:"Word fayl yuborilmadi."});const id=crypto.randomUUID(),name=safeName(req.file.originalname),now=new Date().toISOString();fs.writeFileSync(filePath(id),req.file.buffer);const result=await mammoth.extractRawText({buffer:req.file.buffer});upsertMeta({id,name,favorite:false,updatedAt:now});res.json({documentId:id,text:result.value||"",fileName:name})}catch(e){console.error(e);res.status(500).json({error:e?.message||"Word faylni ochib bo‘lmadi."})}});
-app.get("/api/files/:id",async(req,res)=>{try{const meta=getMeta(req.params.id);if(!meta||!fs.existsSync(filePath(meta.id)))return res.status(404).json({error:"Fayl topilmadi."});const result=await mammoth.extractRawText({buffer:fs.readFileSync(filePath(meta.id))});res.json({documentId:meta.id,fileName:meta.name,text:result.value||"",updatedAt:meta.updatedAt})}catch(e){res.status(500).json({error:e?.message||"Faylni ochib bo‘lmadi."})}});
-app.get("/api/files/:id/download",(req,res)=>{const meta=getMeta(req.params.id);if(!meta||!fs.existsSync(filePath(meta.id)))return res.status(404).json({error:"Fayl topilmadi."});res.download(filePath(meta.id),meta.name)});
-app.post("/api/files/:id/favorite",(req,res)=>{const meta=getMeta(req.params.id);if(!meta)return res.status(404).json({error:"Fayl topilmadi."});const favorite=!meta.favorite;upsertMeta({...meta,favorite});res.json({ok:true,favorite})});
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ok = String(file.originalname || "").toLowerCase().endsWith(".docx");
+    cb(ok ? null : new Error("Faqat .docx Word fayl yuklash mumkin."), ok);
+  },
+});
 
-function cleanJson(t){const v=String(t||"").replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/i,"").trim(),a=v.indexOf("{"),b=v.lastIndexOf("}");return a>=0&&b>a?v.slice(a,b+1):v}
-app.post("/api/chat",async(req,res)=>{try{if(!textClient)return res.status(503).json({error:"GROQ_API_KEY Render Environment Variables ichida sozlanmagan."});const instruction=String(req.body?.instruction||"").trim();if(!instruction)return res.status(400).json({error:"So‘rov yuboring."});const documentText=String(req.body?.documentText||"");const system=`Siz professional AI Word yordamchisisiz. [[IMAGE:id]] markerlarini aniq saqlang. Ularni o‘zgartirmang, o‘chirmang yoki oddiy matnga aylantirmang. Tahrirlash bo‘lsa changed=true va editedDocument to‘liq matn bo‘lsin. Savol bo‘lsa changed=false. Javob o‘zbek tilida va qisqa. FAQAT JSON: {"changed":true,"answer":"...","editedDocument":"..."}`;const r=await textClient.chat.completions.create({model,temperature:.15,response_format:{type:"json_object"},messages:[{role:"system",content:system},{role:"user",content:`Hujjat:\n${documentText}\n\nSo‘rov:\n${instruction}`}]});let d;try{d=JSON.parse(cleanJson(r.choices?.[0]?.message?.content||""))}catch{return res.status(502).json({error:"AI javobini o‘qib bo‘lmadi."})}res.json({changed:Boolean(d.changed),answer:String(d.answer||""),editedDocument:String(d.editedDocument||""),documentId:String(req.body?.documentId||"")})}catch(e){console.error(e);res.status(Number(e?.status)||500).json({error:e?.error?.message||e?.message||"AI bilan bog‘lanishda xatolik."})}});
+const dataDir = process.env.DATA_DIR || path.join(process.cwd(), "data");
+const filesDir = path.join(dataDir, "files");
+const statesDir = path.join(dataDir, "states");
+const indexFile = path.join(dataDir, "index.json");
+fs.mkdirSync(filesDir, { recursive: true });
+fs.mkdirSync(statesDir, { recursive: true });
 
-app.post("/api/image",async(req,res)=>{try{if(!imageClient)return res.status(503).json({error:"OPENAI_API_KEY Render Environment Variables ichida sozlanmagan. Rasm yaratish uchun OpenAI Images kaliti kerak."});const prompt=String(req.body?.prompt||"").trim();if(!prompt)return res.status(400).json({error:"Rasm tavsifini yozing."});const r=await imageClient.images.generate({model:"gpt-image-1",prompt,size:"1024x1024",quality:"auto"});const img=r.data?.[0];if(!img?.b64_json)return res.status(502).json({error:"Rasm ma’lumoti kelmadi."});res.json({ok:true,mime:"image/png",dataUrl:`data:image/png;base64,${img.b64_json}`})}catch(e){console.error("IMAGE ERROR",e);res.status(Number(e?.status)||500).json({error:e?.error?.message||e?.message||"Rasm yaratib bo‘lmadi."})}});
-
-function escapeXml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&apos;")}
-function replaceParagraph(p,text){const value=escapeXml(text);let used=false;return p.replace(/(<w:t(?:\s[^>]*)?>)([\s\S]*?)(<\/w:t>)/g,(_m,o,_old,c)=>{if(used)return`${o}${c}`;used=true;return`${o}${value}${c}`})}
-function applyText(xml,text){const lines=String(text||"").split(/\r?\n/);let i=0;let out=xml.replace(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g,p=>/<w:t(?:\s[^>]*)?>[\s\S]*?<\/w:t>/.test(p)?replaceParagraph(p,lines[i++]??""):p);const rest=lines.slice(i).filter(Boolean);if(rest.length)out=out.replace(/<\/w:body>/,rest.map(x=>`<w:p><w:r><w:t xml:space="preserve">${escapeXml(x)}</w:t></w:r></w:p>`).join("")+"</w:body>");return out}
-function dataUrlToBuffer(url){const m=String(url||"").match(/^data:([^;]+);base64,(.+)$/);if(!m)throw new Error("Rasm ma’lumoti noto‘g‘ri.");return{mime:m[1],buffer:Buffer.from(m[2],"base64")}}
-function imageType(mime){const x=String(mime||"").toLowerCase();return x==="image/jpeg"||x==="image/jpg"?"jpg":x==="image/png"?"png":x==="image/gif"?"gif":x==="image/bmp"?"bmp":null}
-async function buildDocx(id,text,blocks){const meta=getMeta(id);if(!meta||!fs.existsSync(filePath(id)))throw new Error("Word fayl topilmadi.");const images=Array.isArray(blocks)?blocks.filter(x=>x?.type==="image"&&x.dataUrl):[];if(!images.length){const zip=await JSZip.loadAsync(fs.readFileSync(filePath(id)));const f=zip.file("word/document.xml");if(!f)throw new Error("DOCX document.xml topilmadi.");const xml=await f.async("string");zip.file("word/document.xml",applyText(xml,text));return zip.generateAsync({type:"nodebuffer",compression:"DEFLATE"})}
-  const children=[];for(const line of String(text||"").split(/\r?\n/))children.push(new Paragraph({children:[new TextRun(line)]}));
-  for(const block of images){const {mime,buffer}=dataUrlToBuffer(block.dataUrl),type=imageType(mime);if(!type)continue;children.push(new Paragraph({children:[new ImageRun({data:buffer,type,transformation:{width:700,height:480}})]}));if(block.caption)children.push(new Paragraph({children:[new TextRun(String(block.caption))]}))}
-  return Packer.toBuffer(new Document({sections:[{children:children.length?children:[new Paragraph({children:[new TextRun("")]})]}]}));
+function loadIndex() {
+  try {
+    const value = JSON.parse(fs.readFileSync(indexFile, "utf8"));
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
 }
-app.post("/api/save",async(req,res)=>{try{const id=String(req.body?.documentId||""),meta=getMeta(id);if(!meta)return res.status(404).json({error:"Word fayl topilmadi."});const out=await buildDocx(id,String(req.body?.text||""),req.body?.images);fs.writeFileSync(filePath(id),out);const updatedAt=new Date().toISOString();upsertMeta({...meta,updatedAt});res.json({ok:true,documentId:id,fileName:meta.name,updatedAt,size:out.length})}catch(e){console.error("SAVE ERROR",e);res.status(500).json({error:e?.message||"Word faylni saqlab bo‘lmadi."})}});
-app.post("/api/export",async(req,res)=>{try{const id=String(req.body?.documentId||""),meta=getMeta(id);if(!meta)return res.status(404).json({error:"Word fayl topilmadi."});const out=await buildDocx(id,String(req.body?.text||""),req.body?.images);fs.writeFileSync(filePath(id),out);res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");res.setHeader("Content-Disposition",`attachment; filename="${meta.name.replace(/\"/g,"")}"`);res.send(out)}catch(e){console.error("EXPORT ERROR",e);res.status(500).json({error:e?.message||"Word fayl tayyorlanmadi."})}});
-app.use((e,_req,res,_next)=>{console.error(e);if(!res.headersSent)res.status(400).json({error:e?.message||"Server xatosi."})});
-app.listen(port,"0.0.0.0",()=>console.log(`AI Word Editor API: ${port} | Text:${Boolean(textClient)} | Image:${Boolean(imageClient)}`));
+function saveIndex(items) {
+  fs.writeFileSync(indexFile, JSON.stringify(items.slice(0, 200), null, 2), "utf8");
+}
+let files = loadIndex();
+
+function safeName(name) {
+  return String(name || "AI-Word-Hujjat.docx")
+    .replace(/[<>:\"/\\|?*\x00-\x1F]/g, "_")
+    .trim() || "AI-Word-Hujjat.docx";
+}
+function safeId(id) {
+  return String(id || "").replace(/[^a-zA-Z0-9_-]/g, "");
+}
+function filePath(id) { return path.join(filesDir, `${safeId(id)}.docx`); }
+function statePath(id) { return path.join(statesDir, `${safeId(id)}.json`); }
+function getMeta(id) { return files.find((x) => x.id === String(id || "")) || null; }
+function upsertMeta(meta) {
+  files = files.filter((x) => x.id !== meta.id);
+  files.unshift(meta);
+  saveIndex(files);
+}
+function readState(id) {
+  try {
+    const raw = fs.readFileSync(statePath(id), "utf8");
+    const value = JSON.parse(raw);
+    return value && Array.isArray(value.content) ? value : null;
+  } catch {
+    return null;
+  }
+}
+function writeState(id, content) {
+  fs.writeFileSync(statePath(id), JSON.stringify({ version: 1, content, updatedAt: new Date().toISOString() }), "utf8");
+}
+
+function contentToText(content) {
+  return (Array.isArray(content) ? content : []).map((item) => {
+    if (item?.type === "image") return `[[IMAGE:${item.id || "image"}]]${item.caption ? `\n${item.caption}` : ""}`;
+    return String(item?.text || "");
+  }).join("\n").trim();
+}
+function normaliseContent(content) {
+  return (Array.isArray(content) ? content : []).map((item, index) => {
+    if (item?.type === "image") {
+      return {
+        type: "image",
+        id: String(item.id || `img-${index}`),
+        dataUrl: String(item.dataUrl || ""),
+        caption: String(item.caption || "").slice(0, 5000),
+      };
+    }
+    return { type: "text", text: String(item?.text || "") };
+  }).filter((item) => item.type === "image" ? item.dataUrl : true);
+}
+
+app.get("/", (_req, res) => res.json({ ok: true, service: "AI Word Editor API", textAI: Boolean(textClient), authRequired: false }));
+app.get("/health", (_req, res) => res.json({ ok: true, aiConfigured: Boolean(textClient), provider: "Groq", model, authRequired: false }));
+app.get("/api/files", (_req, res) => res.json({ files: files.filter((x) => fs.existsSync(filePath(x.id))) }));
+
+app.post("/api/extract", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Word fayl yuborilmadi." });
+    const id = crypto.randomUUID();
+    const name = safeName(req.file.originalname);
+    fs.writeFileSync(filePath(id), req.file.buffer);
+    const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+    upsertMeta({ id, name, favorite: false, updatedAt: new Date().toISOString() });
+    return res.json({ documentId: id, fileName: name, text: result.value || "" });
+  } catch (error) {
+    console.error("EXTRACT", error);
+    return res.status(500).json({ error: error?.message || "Word faylni ochib bo‘lmadi." });
+  }
+});
+
+app.get("/api/files/:id", async (req, res) => {
+  try {
+    const meta = getMeta(req.params.id);
+    if (!meta || !fs.existsSync(filePath(meta.id))) return res.status(404).json({ error: "Fayl topilmadi." });
+    const state = readState(meta.id);
+    if (state) {
+      return res.json({ documentId: meta.id, fileName: meta.name, content: state.content, updatedAt: meta.updatedAt });
+    }
+    const result = await mammoth.extractRawText({ buffer: fs.readFileSync(filePath(meta.id)) });
+    return res.json({ documentId: meta.id, fileName: meta.name, content: [{ type: "text", text: result.value || "" }], updatedAt: meta.updatedAt });
+  } catch (error) {
+    return res.status(500).json({ error: error?.message || "Faylni ochib bo‘lmadi." });
+  }
+});
+
+app.get("/api/files/:id/download", (req, res) => {
+  const meta = getMeta(req.params.id);
+  if (!meta || !fs.existsSync(filePath(meta.id))) return res.status(404).json({ error: "Fayl topilmadi." });
+  return res.download(filePath(meta.id), meta.name);
+});
+
+app.post("/api/files/:id/favorite", (req, res) => {
+  const meta = getMeta(req.params.id);
+  if (!meta) return res.status(404).json({ error: "Fayl topilmadi." });
+  const favorite = !meta.favorite;
+  upsertMeta({ ...meta, favorite });
+  return res.json({ ok: true, favorite });
+});
+
+function cleanJson(text) {
+  const value = String(text || "").replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  const start = value.indexOf("{");
+  const end = value.lastIndexOf("}");
+  return start >= 0 && end > start ? value.slice(start, end + 1) : value;
+}
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    if (!textClient) return res.status(503).json({ error: "AI kaliti serverda sozlanmagan." });
+    const instruction = String(req.body?.instruction || "").trim();
+    if (!instruction) return res.status(400).json({ error: "So‘rov yozing." });
+    const documentText = String(req.body?.documentText || "");
+    const system = `Siz professional AI Word Editor yordamchisisiz. [[IMAGE:id]] markerlarini o‘zgartirmang, o‘chirmang va oddiy matnga aylantirmang. Tahrirlash so‘ralsa changed=true va editedDocument to‘liq tahrirlangan matn bo‘lsin. Savol yoki maslahat bo‘lsa changed=false. Javob o‘zbek tilida, qisqa va foydali bo‘lsin. FAQAT JSON qaytaring: {"changed":true,"answer":"...","editedDocument":"..."}`;
+    const response = await textClient.chat.completions.create({
+      model,
+      temperature: 0.15,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: `Hujjat:\n${documentText}\n\nFoydalanuvchi so‘rovi:\n${instruction}` },
+      ],
+    });
+    let data;
+    try { data = JSON.parse(cleanJson(response.choices?.[0]?.message?.content || "")); }
+    catch { return res.status(502).json({ error: "AI javobini o‘qib bo‘lmadi." }); }
+    return res.json({
+      changed: Boolean(data.changed),
+      answer: String(data.answer || ""),
+      editedDocument: String(data.editedDocument || ""),
+      documentId: String(req.body?.documentId || ""),
+    });
+  } catch (error) {
+    console.error("CHAT", error);
+    return res.status(Number(error?.status) || 500).json({ error: error?.message || "AI bilan bog‘lanishda xatolik." });
+  }
+});
+
+function escapeXml(value) {
+  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&apos;");
+}
+function paragraphReplace(xml, text) {
+  const value = escapeXml(text);
+  let used = false;
+  return xml.replace(/(<w:t(?:\s[^>]*)?>)([\s\S]*?)(<\/w:t>)/g, (_m, open, _old, close) => {
+    if (used) return `${open}${close}`;
+    used = true;
+    return `${open}${value}${close}`;
+  });
+}
+function replaceDocxText(xml, text) {
+  const lines = String(text || "").split(/\r?\n/);
+  let index = 0;
+  let out = xml.replace(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g, (paragraph) => {
+    if (!/<w:t(?:\s[^>]*)?>[\s\S]*?<\/w:t>/.test(paragraph)) return paragraph;
+    return paragraphReplace(paragraph, lines[index++] ?? "");
+  });
+  const rest = lines.slice(index).filter(Boolean);
+  if (rest.length) {
+    out = out.replace(/<\/w:body>/, `${rest.map((line) => `<w:p><w:r><w:t xml:space="preserve">${escapeXml(line)}</w:t></w:r></w:p>`).join("")}</w:body>`);
+  }
+  return out;
+}
+function imageData(url) {
+  const match = String(url || "").match(/^data:(image\/(?:png|jpeg|jpg|gif|bmp));base64,(.+)$/i);
+  if (!match) throw new Error("Rasm formati qo‘llab-quvvatlanmaydi. PNG yoki JPG ishlating.");
+  const mime = match[1].toLowerCase();
+  const type = mime === "image/jpeg" || mime === "image/jpg" ? "jpg" : mime.replace("image/", "");
+  return { type, buffer: Buffer.from(match[2], "base64") };
+}
+async function buildDocx(id, content) {
+  const meta = getMeta(id);
+  if (!meta || !fs.existsSync(filePath(id))) throw new Error("Word fayl topilmadi.");
+  const normal = normaliseContent(content);
+  const images = normal.filter((item) => item.type === "image" && item.dataUrl);
+  if (!images.length) {
+    const zip = await JSZip.loadAsync(fs.readFileSync(filePath(id)));
+    const file = zip.file("word/document.xml");
+    if (!file) throw new Error("DOCX document.xml topilmadi.");
+    const xml = await file.async("string");
+    zip.file("word/document.xml", replaceDocxText(xml, normal.filter((x) => x.type === "text").map((x) => x.text).join("\n")));
+    return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  }
+  const children = [];
+  for (const item of normal) {
+    if (item.type === "text") {
+      for (const line of String(item.text || "").split(/\r?\n/)) children.push(new Paragraph({ children: [new TextRun(line)] }));
+    } else if (item.type === "image") {
+      const { type, buffer } = imageData(item.dataUrl);
+      children.push(new Paragraph({ children: [new ImageRun({ data: buffer, type, transformation: { width: 650, height: 450 } })] }));
+      if (item.caption) children.push(new Paragraph({ children: [new TextRun(item.caption)] }));
+    }
+  }
+  const doc = new Document({ sections: [{ children: children.length ? children : [new Paragraph("")] }] });
+  return Packer.toBuffer(doc);
+}
+
+app.post("/api/save", async (req, res) => {
+  try {
+    const id = String(req.body?.documentId || "");
+    const meta = getMeta(id);
+    if (!meta) return res.status(404).json({ error: "Word fayl topilmadi." });
+    const content = normaliseContent(req.body?.content);
+    const out = await buildDocx(id, content);
+    fs.writeFileSync(filePath(id), out);
+    writeState(id, content);
+    const updatedAt = new Date().toISOString();
+    upsertMeta({ ...meta, updatedAt });
+    return res.json({ ok: true, documentId: id, fileName: meta.name, updatedAt });
+  } catch (error) {
+    console.error("SAVE", error);
+    return res.status(500).json({ error: error?.message || "Word faylni saqlab bo‘lmadi." });
+  }
+});
+
+app.post("/api/export", async (req, res) => {
+  try {
+    const id = String(req.body?.documentId || "");
+    const meta = getMeta(id);
+    if (!meta) return res.status(404).json({ error: "Word fayl topilmadi." });
+    const content = normaliseContent(req.body?.content);
+    const out = await buildDocx(id, content);
+    fs.writeFileSync(filePath(id), out);
+    writeState(id, content);
+    upsertMeta({ ...meta, updatedAt: new Date().toISOString() });
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", `attachment; filename="${meta.name.replace(/\"/g, "")}"`);
+    return res.send(out);
+  } catch (error) {
+    console.error("EXPORT", error);
+    return res.status(500).json({ error: error?.message || "Word fayl tayyorlanmadi." });
+  }
+});
+
+app.use((error, _req, res, _next) => {
+  console.error("SERVER", error);
+  if (!res.headersSent) res.status(400).json({ error: error?.message || "Server xatosi." });
+});
+
+app.listen(port, "0.0.0.0", () => console.log(`AI Word Editor API: ${port} | TextAI:${Boolean(textClient)} | ImageAI:OFF`));
