@@ -2,33 +2,52 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
-<title>AI Word Studio</title><link rel="stylesheet" href="./style.css?v=20260822">
+<title>AI Word Studio</title>
+<link rel="stylesheet" href="./style.css?v=final20260822">
 </head>
 <body>
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="brand-mark">W</div><div><h1>AI Word Studio</h1><small>Write · Edit · Organize</small></div></div>
   <button class="new-doc" id="newBtn" type="button">＋ Yangi hujjat</button>
-  <nav class="nav"><button class="active" type="button">⌂ Bosh sahifa</button><button type="button">▣ Mening fayllarim</button><button type="button">◷ Yaqinda</button><button type="button">★ Sevimlilar</button><button type="button">⚙ Sozlamalar</button></nav>
+  <nav class="nav">
+    <button class="active" type="button">⌂ Bosh sahifa</button>
+    <button type="button">▣ Mening fayllarim</button>
+    <button type="button">◷ Yaqinda</button>
+    <button type="button">★ Sevimlilar</button>
+    <button type="button">⚙ Sozlamalar</button>
+  </nav>
   <div class="sidebar-bottom"><div class="profile"><div class="avatar">J</div><div><strong>Mehmon</strong><span>AI Word Studio</span></div></div></div>
 </aside>
 <header class="topbar">
   <div class="crumb"><span>AI Word Studio</span><b>›</b><strong id="topFileName">Yangi AI hujjat.docx</strong></div>
-  <div class="top-actions"><button id="filesTopBtn" type="button">Fayllar</button><button id="wordBtn" type="button">Word</button><input id="fileInput" type="file" accept=".docx" hidden><button id="mediaBtn" type="button">Media</button><input id="mediaInput" type="file" multiple accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,video/*,.pdf,.txt,.md,.csv,.json,.xlsx,.xls,.pptx,.ppt" hidden></div>
+  <div class="top-actions">
+    <button id="filesTopBtn" type="button">Fayllar</button>
+    <button id="wordBtn" type="button">Word</button><input id="fileInput" type="file" accept=".docx" hidden>
+    <button id="mediaBtn" type="button">Media</button><input id="mediaInput" type="file" multiple accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,video/*" hidden>
+  </div>
 </header>
 <main class="workspace"><section class="doc-shell">
-  <div class="doc-toolbar"><div class="toolbar-left"><button class="tool" type="button" data-cmd="undo">↶</button><button class="tool" type="button" data-cmd="redo">↷</button><span class="divider"></span><button class="tool" type="button" data-cmd="bold"><b>B</b></button><button class="tool" type="button" data-cmd="italic"><i>I</i></button><button class="tool" type="button" data-cmd="underline"><u>U</u></button><span class="divider"></span><button class="tool" type="button" data-cmd="justifyLeft">☰</button><button class="tool" type="button" data-cmd="justifyCenter">≡</button><button class="tool" type="button" data-cmd="justifyRight">☷</button></div><div class="toolbar-right"><span class="save-label" id="statusText">Tayyor</span><button class="save-btn" id="saveBtn" type="button">✓ Saqlash</button><button class="download-btn" id="downloadBtn" type="button">↓ Word</button></div></div>
+  <div class="doc-toolbar">
+    <div class="toolbar-left">
+      <button class="tool" type="button" data-cmd="undo">↶</button><button class="tool" type="button" data-cmd="redo">↷</button><span class="divider"></span>
+      <button class="tool" type="button" data-cmd="bold"><b>B</b></button><button class="tool" type="button" data-cmd="italic"><i>I</i></button><button class="tool" type="button" data-cmd="underline"><u>U</u></button><span class="divider"></span>
+      <button class="tool" type="button" data-cmd="justifyLeft">☰</button><button class="tool" type="button" data-cmd="justifyCenter">≡</button><button class="tool" type="button" data-cmd="justifyRight">☷</button>
+    </div>
+    <div class="toolbar-right"><span class="save-label" id="statusText">Tayyor</span><button class="save-btn" id="saveBtn" type="button">✓ Saqlash</button><button class="download-btn" id="downloadBtn" type="button">↓ Word</button></div>
+  </div>
   <div class="doc-head"><div class="doc-title" contenteditable="true" spellcheck="false">Yangi AI hujjat</div><div class="doc-meta"><span id="fileName">Yangi AI hujjat.docx</span><span>·</span><span id="saveState">Tayyor</span></div></div>
-  <div class="doc-wrap"><div id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Hujjatingizni shu yerda yozing..."></div><div class="drop-zone" id="dropZone">Faylni shu yerga tashlang</div></div>
+  <div class="doc-wrap"><div id="editor" class="editor" contenteditable="true" spellcheck="true" data-placeholder="Hujjatingizni shu yerda yozing..."></div><div class="drop-zone" id="dropZone">Rasmni shu yerga tashlang</div></div>
   <div class="doc-status"><span>AI Word Studio</span><span>DOCX · Secure editing</span></div>
 </section></main>
 <aside class="chat">
   <div class="chat-top"><div class="ai-id"><div class="ai-orb">AI</div><div><div class="chat-title">AI yordamchi</div><div class="chat-sub">Tahrirlash · G‘oya · Matn</div></div></div><span class="online"></span></div>
-  <div class="messages" id="messages"><div class="bubble ai">Salom! Word faylni oching yoki shu yerga topshiriq yozing.</div></div>
+  <div class="messages" id="messages"><div class="bubble ai">Salom! Word faylni oching yoki topshiriq yozing.</div></div>
   <div class="suggestions"><button type="button" data-prompt="Imlo va grammatik xatolarni tuzat.">Imlo</button><button type="button" data-prompt="Hujjatni professional uslubda qayta yoz.">Professional</button><button type="button" data-prompt="Hujjatning qisqa mazmunini yoz.">Mazmun</button><button type="button" data-prompt="Hujjatga kuchli xulosa yoz.">Xulosa</button></div>
   <div class="composer"><textarea id="prompt" placeholder="Say anything..." aria-label="AI uchun topshiriq"></textarea><div class="composer-row"><button class="attach" id="chatAttach" type="button">＋ Media</button><button class="send" id="sendBtn" type="button">Yuborish</button></div></div>
 </aside>
 </div>
-<div class="files-panel" id="filesPanel"><div class="files-title"><div><strong id="filesTitle">Mening fayllarim</strong><small>Recents</small></div><button id="closeFiles" type="button">×</button></div><div id="filesBody"></div></div>
-<script src="./app.js?v=20260822"></script>
-</body></html>
+<div class="files-panel" id="filesPanel"><div class="files-title"><strong id="filesTitle">Mening fayllarim · Recents</strong><button id="closeFiles" type="button">×</button></div><div id="filesBody"></div></div>
+<script src="./app.js?v=final20260822"></script>
+</body>
+</html>
