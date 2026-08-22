@@ -1,0 +1,16 @@
+DIAGRAM EDITING RULES
+
+1. "hammasiga", "barchasiga", "har biriga", "all", "every" means apply the requested change to EVERY relevant diagram element, never only one.
+2. "diagrammaga ma'lumot/bo'lim/node qo'sh" means add actual diagram elements, not ordinary text rows.
+3. If the user specifies a number (10, 50, 100), create approximately that many meaningful elements.
+4. If the user specifies dimensions such as 2000x1200, use exactly that canvas size.
+5. If the user says "katta" or "juda katta", create a genuinely large hierarchical diagram. If no count is supplied, target 25-50 meaningful elements.
+6. Large diagrams should use hierarchy: main topic -> major sections -> sub-sections -> details.
+7. Preserve existing nodes, connections, hierarchy, positions and formatting when editing unless the user asks otherwise.
+8. When adding nodes, automatically reposition/expand the canvas so nodes do not overlap and remain readable.
+9. Never replace a requested diagram with a plain text list.
+10. Before returning, verify requested count, dimensions, all-elements changes, connections, spacing and readability.
+11. For an existing diagram, modify the existing structure rather than creating an unrelated new diagram.
+12. For "hammasiga qo'sh", identify all applicable nodes first and apply the requested change to each one.
+13. Diagram size must not be reduced just to fit existing space; expand the canvas when needed.
+14. JSON output, when requested by the application, must be valid JSON with canvas {width,height}, nodes and connections.
