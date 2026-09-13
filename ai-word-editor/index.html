@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="AI Word Studio — GitHub Pages uchun serverless Word muharriri.">
-  <title>AI Word Studio — Serverless</title>
+  <meta name="description" content="AI Word Studio — zamonaviy Word muharriri.">
+  <title>AI Word Studio</title>
   <link rel="stylesheet" href="./style.css?v=github20260913">
 </head>
 <body>
@@ -23,11 +23,11 @@
     </nav>
     <div class="sidebar-card">
       <div class="mini-label">Hujjat holati</div>
-      <div class="health-row"><span id="healthDot" class="health-dot offline"></span><strong id="healthText">Local AI tayyor</strong></div>
+      <div class="health-row"><span id="healthDot" class="health-dot online"></span><strong id="healthText">Tayyor</strong></div>
       <div class="metric-grid"><div><b id="wordCountSide">0</b><span>so‘z</span></div><div><b id="charCountSide">0</b><span>belgi</span></div><div><b id="readTimeSide">0</b><span>daq.</span></div></div>
       <div class="progress"><span id="scoreBar"></span></div><div class="score-line"><span>Hujjat skori</span><strong id="scoreValue">0/100</strong></div>
     </div>
-    <div class="sidebar-bottom"><div class="profile-card"><div class="avatar">J</div><div class="profile-copy"><strong>Mehmon</strong><span>GitHub Local Mode</span></div><span class="guest-pill">FREE</span></div></div>
+    <div class="sidebar-bottom"><div class="profile-card"><div class="avatar">J</div><div class="profile-copy"><strong>Mehmon</strong><span>AI Word Studio</span></div><span class="guest-pill">FREE</span></div></div>
   </aside>
 
   <header class="topbar">
@@ -47,9 +47,9 @@
     </section>
   </main>
 
-  <aside class="chat" id="chatPanel"><div class="chat-top"><div class="ai-id"><div class="ai-orb"><span>AI</span></div><div><div class="chat-title">AI yordamchi</div><div class="chat-sub"><span class="online-dot"></span> Local · Internet serversiz</div></div></div><button class="icon-btn" id="clearChat" type="button" title="Chatni tozalash">⌫</button></div>
-    <div class="ai-hero"><div class="hero-badge">GITHUB LOCAL AI</div><h2>Hujjatingizni kuchaytiring.</h2><p>Bu versiya Render yoki boshqa backendga bog‘lanmaydi. AI amallari brauzerning o‘zida bajariladi.</p></div>
-    <div class="messages" id="messages"><div class="bubble ai welcome-bubble"><strong>Salom! 👋</strong><br>Matn yozing yoki Word oching. Men qisqartirish, xulosa, imlo, professional uslub, kirish, yakun va savol-javob amallarini shu brauzerda bajaraman.</div></div>
+  <aside class="chat" id="chatPanel"><div class="chat-top"><div class="ai-id"><div class="ai-orb"><span>AI</span></div><div><div class="chat-title">AI yordamchi</div><div class="chat-sub"><span class="online-dot"></span> Tayyor · Hujjatni tushunadi</div></div></div><button class="icon-btn" id="clearChat" type="button" title="Chatni tozalash">⌫</button></div>
+    <div class="ai-hero"><div class="hero-badge">AI WORD STUDIO</div><h2>Hujjatingizni kuchaytiring.</h2><p>Matn yozing, savol bering yoki tayyor amallardan foydalaning.</p></div>
+    <div class="messages" id="messages"><div class="bubble ai welcome-bubble"><strong>Salom! 👋</strong></div></div>
     <div class="suggestions" id="suggestions"><button type="button" data-prompt="Imlo va grammatik xatolarni tuzat, lekin ma’noni o‘zgartirma.">✎ Imlo</button><button type="button" data-prompt="Hujjatni professional va aniq uslubda qayta yoz.">✦ Professional</button><button type="button" data-prompt="Hujjatni 40 foizga qisqartir, asosiy fikrlarni saqla.">↘ Qisqartir</button><button type="button" data-prompt="Hujjatning 5 bandli qisqa xulosasini tayyorla.">☷ Xulosa</button><button type="button" data-prompt="Shu mavzu bo‘yicha kuchli kirish qismi yoz.">＋ Kirish</button><button type="button" data-prompt="Shu mavzu bo‘yicha aniq va ta’sirli yakun yoz.">✓ Yakun</button></div>
     <div class="composer"><textarea id="prompt" placeholder="AI ga topshiriq yozing…" aria-label="AI uchun topshiriq"></textarea><div class="composer-row"><div class="composer-tools"><button class="attach" id="chatAttach" type="button">＋ Media</button><button class="attach" id="insertTemplateBtn" type="button">✦ Andoza</button></div><button class="send" id="sendBtn" type="button">Yuborish <span>↗</span></button></div><div class="composer-hint">Enter yuboradi · Shift+Enter yangi qator</div></div>
   </aside>
@@ -58,10 +58,11 @@
 <div class="overlay" id="overlay" hidden></div>
 <div class="files-panel" id="filesPanel" aria-hidden="true"><div class="panel-head"><div><strong id="filesTitle">Mening fayllarim</strong><span id="panelSub">Brauzerda saqlangan hujjatlar</span></div><button class="icon-btn" id="closeFiles" type="button">×</button></div><div class="panel-tabs"><button class="active" data-filter="all" type="button">Barchasi</button><button data-filter="favorite" type="button">★ Sevimlilar</button></div><div id="filesBody"></div></div>
 <div class="modal" id="templateModal" hidden><div class="modal-card wide"><div class="panel-head"><div><strong>Hujjat andozalari</strong><span>Tayyor strukturadan boshlang</span></div><button class="icon-btn" id="closeTemplates" type="button">×</button></div><div class="template-grid" id="templateGrid"></div></div></div>
-<div class="modal" id="settingsModal" hidden><div class="modal-card"><div class="panel-head"><div><strong>Sozlamalar</strong><span>AI Word Studio · GitHub mode</span></div><button class="icon-btn" id="closeSettings" type="button">×</button></div><div class="setting-row"><div><b>Avtomatik saqlash</b><span>O‘zgarishlarni brauzer xotirasiga yozish</span></div><label class="switch"><input id="autosaveToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b>Yorug‘lik rejimi</b><span>Interfeys ko‘rinishini tanlash</span></div><button class="mode-btn" id="themeToggle" type="button">☾ Tungi</button></div><div class="setting-row"><div><b>AI rejimi</b><span>Backend talab qilinmaydi</span></div><span class="server-pill ok" id="serverPill">LOCAL</span></div></div></div>
+<div class="modal" id="settingsModal" hidden><div class="modal-card"><div class="panel-head"><div><strong>Sozlamalar</strong><span>AI Word Studio</span></div><button class="icon-btn" id="closeSettings" type="button">×</button></div><div class="setting-row"><div><b>Avtomatik saqlash</b><span>O‘zgarishlarni brauzer xotirasiga yozish</span></div><label class="switch"><input id="autosaveToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b>Yorug‘lik rejimi</b><span>Interfeys ko‘rinishini tanlash</span></div><button class="mode-btn" id="themeToggle" type="button">☾ Tungi</button></div><div class="setting-row"><div><b>AI rejimi</b><span>Server talab qilinmaydi</span></div><span class="server-pill ok" id="serverPill">LOCAL</span></div></div></div>
 <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.12.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
 <script src="./app.js?v=github20260913"></script>
+<script src="./chat-fix.js?v=github20260913"></script>
 </body>
 </html>
