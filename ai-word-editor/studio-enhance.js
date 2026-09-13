@@ -10,7 +10,7 @@
   function setTheme(){app.classList.toggle('dark',theme==='dark');$('themeToggle').textContent=theme==='dark'?'☀️ Yorug‘':'☾ Tungi'}
   async function createNew(){try{if(typeof status==='function')status('Yangi Word yaratilmoqda...');const r=await fetch(api('/api/create'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:'Yangi AI hujjat.docx'})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Yangi hujjat yaratilmadi');currentDocumentId=d.documentId;currentFileName=d.fileName;currentFileHandle=null;rememberFile(d.fileName);clearEditor();$('docTitle').textContent='Yangi AI hujjat';$('updatedTime').textContent='Bugun · yangi';if(typeof status==='function')status('Tayyor');stats();toast('Yangi Word hujjati tayyor','success');}catch(e){toast(e.message,'error');if(typeof status==='function')status('Server xatosi')}}
   async function favorite(){if(!currentDocumentId){toast('Avval Word hujjat yarating yoki oching','error');return}try{const r=await fetch(api(`/api/files/${encodeURIComponent(currentDocumentId)}/favorite`),{method:'POST'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Xatolik');currentFavorite=d.favorite;$('favoriteBtn').textContent=currentFavorite?'★':'☆';$('favoriteBtn').classList.toggle('active',currentFavorite);toast(currentFavorite?'Sevimliga qo‘shildi':'Sevimlidan olib tashlandi','success');}catch(e){toast(e.message,'error')}}
-  function openSettings(){document.querySelectorAll('.modal').forEach(x=>{x.hidden=true});$('settingsModal').hidden=false;overlay.hidden=false}
+  function openSettings(){document.querySelectorAll('.modal').forEach(x=>x.hidden=true);$('settingsModal').hidden=false;overlay.hidden=false}
   function closePanels(){overlay.hidden=true;$('settingsModal').hidden=true;$('templateModal').hidden=true;if($('filesPanel'))$('filesPanel').setAttribute('aria-hidden','true');sidebar?.classList.remove('open')}
   function openSearch(){const f=$('findBar');f.hidden=false;$('findInput').focus();search()}
   function clearMarks(){editor.querySelectorAll('mark.search-hit').forEach(m=>m.replaceWith(document.createTextNode(m.textContent||'')));searchMatches=[];searchIndex=0}
@@ -24,7 +24,6 @@
     $('newBtn').onclick=e=>{e.preventDefault();createNew()};
     $('favoriteBtn').onclick=favorite;
     $('focusBtn').onclick=()=>{focus=!focus;app.classList.toggle('focus',focus);$('focusBtn').textContent=focus?'◒ Fokusdan chiqish':'◒ Fokus'};
-    $('wordBtn').onclick=()=>fileInput?.click();
     $('searchBtn').onclick=openSearch;$('findClose').onclick=()=>{clearMarks();$('findBar').hidden=true};$('findInput').oninput=search;$('findNext').onclick=()=>stepSearch(1);$('findPrev').onclick=()=>stepSearch(-1);
     $('templatesBtn').onclick=()=>{$('templateModal').hidden=false;overlay.hidden=false;templates()};$('insertTemplateBtn').onclick=()=>{$('templateModal').hidden=false;overlay.hidden=false;templates()};$('closeTemplates').onclick=closePanels;
     $('closeSettings').onclick=closePanels;$('themeToggle').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem('aiws-theme',theme);setTheme()};$('autosaveToggle').onchange=e=>{autoSave=e.target.checked;localStorage.setItem('aiws-autosave',autoSave?'1':'0');toast(autoSave?'Avtomatik saqlash yoqildi':'Avtomatik saqlash o‘chirildi')};
