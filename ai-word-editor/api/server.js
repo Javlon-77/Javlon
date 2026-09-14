@@ -13,9 +13,9 @@ import { Document, Packer, Paragraph, TextRun, ImageRun, Table, TableRow, TableC
 dotenv.config();
 const app=express();
 const port=Number(process.env.PORT||3000);
-const groqKey=process.env.GROQ_API_KEY?.trim();
-const model=process.env.GROQ_MODEL?.trim()||"openai/gpt-oss-120b";
-const textClient=groqKey?new OpenAI({apiKey:groqKey,baseURL:"https://api.groq.com/openai/v1",timeout:45000}):null;
+const geminiKey=process.env.GEMINI_API_KEY?.trim()||process.env.GOOGLE_API_KEY?.trim();
+const model=process.env.GEMINI_MODEL?.trim()||"gemini-3.6-flash";
+const textClient=geminiKey?new OpenAI({apiKey:geminiKey,baseURL:"https://generativelanguage.googleapis.com/v1beta/openai/",timeout:60000}):null;
 app.use(cors({origin:true}));
 app.use(express.json({limit:"70mb"}));
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:25*1024*1024},fileFilter:(_r,f,cb)=>{const ok=String(f.originalname||"").toLowerCase().endsWith(".docx");cb(ok?null:new Error("Faqat .docx Word fayl yuklash mumkin."),ok)}});
@@ -32,24 +32,37 @@ function upsertMeta(meta){files=files.filter(x=>x.id!==meta.id);files.unshift(me
 function readState(id){try{const v=JSON.parse(fs.readFileSync(statePath(id),"utf8"));return v&&Array.isArray(v.content)?v:null}catch{return null}}
 function writeState(id,content){fs.writeFileSync(statePath(id),JSON.stringify({version:2,content,updatedAt:new Date().toISOString()}),"utf8")}
 function normaliseContent(content){return(Array.isArray(content)?content:[]).map((item,i)=>{if(item?.type==="image")return{type:"image",id:String(item.id||`img-${i}`),dataUrl:String(item.dataUrl||""),caption:String(item.caption||"").slice(0,5000)};if(item?.type==="matrix")return{type:"matrix",id:String(item.id||`matrix-${i}`),title:String(item.title||"DIAGRAMMA").slice(0,300),rows:(Array.isArray(item.rows)?item.rows:[]).slice(0,100).map(row=>(Array.isArray(row)?row:[]).slice(0,30).map(v=>String(v??"").slice(0,1000)))};return{type:"text",text:String(item?.text||"")}}).filter(x=>x.type!=="image"||x.dataUrl)}
-app.get("/",(_r,res)=>res.json({ok:true,service:"AI Word Editor API",textAI:Boolean(textClient),authRequired:false,model}));
-app.get("/health",(_r,res)=>res.json({ok:true,aiConfigured:Boolean(textClient),provider:"Groq",model,authRequired:false}));
+app.get("/",(_r,res)=>res.json({ok:true,service:"AI Word Editor API",textAI:Boolean(textClient),provider:"Google Gemini",model,authRequired:false}));
+app.get("/health",(_r,res)=>res.json({ok:true,aiConfigured:Boolean(textClient),provider:"Google Gemini",model,authRequired:false}));
 app.get("/api/files",(_r,res)=>res.json({files:files.filter(x=>fs.existsSync(filePath(x.id)))}));
 app.post("/api/create",async(req,res)=>{try{const name=safeName(req.body?.fileName||"Yangi AI hujjat.docx");const id=crypto.randomUUID();const buffer=await Packer.toBuffer(new Document({sections:[{children:[new Paragraph("")]}]}));fs.writeFileSync(filePath(id),buffer);const now=new Date().toISOString();upsertMeta({id,name,favorite:false,updatedAt:now});writeState(id,[{type:"text",text:""}]);res.json({documentId:id,fileName:name,content:[{type:"text",text:""}],updatedAt:now})}catch(e){console.error("CREATE",e);res.status(500).json({error:e?.message||"Yangi Word fayl yaratilmadi."})}});
 app.post("/api/extract",upload.single("file"),async(req,res)=>{try{if(!req.file)return res.status(400).json({error:"Word fayl yuborilmadi."});const id=crypto.randomUUID(),name=safeName(req.file.originalname);fs.writeFileSync(filePath(id),req.file.buffer);const result=await mammoth.extractRawText({buffer:req.file.buffer});const content=[{type:"text",text:result.value||""}];writeState(id,content);upsertMeta({id,name,favorite:false,updatedAt:new Date().toISOString()});res.json({documentId:id,fileName:name,text:result.value||"",content})}catch(e){console.error("EXTRACT",e);res.status(500).json({error:e?.message||"Word faylni ochib bo‘lmadi."})}});
 app.get("/api/files/:id",async(req,res)=>{try{const meta=getMeta(req.params.id);if(!meta||!fs.existsSync(filePath(meta.id)))return res.status(404).json({error:"Fayl topilmadi."});const state=readState(meta.id);if(state)return res.json({documentId:meta.id,fileName:meta.name,content:state.content,updatedAt:meta.updatedAt,favorite:Boolean(meta.favorite)});const result=await mammoth.extractRawText({buffer:fs.readFileSync(filePath(meta.id))});res.json({documentId:meta.id,fileName:meta.name,content:[{type:"text",text:result.value||""}],updatedAt:meta.updatedAt,favorite:Boolean(meta.favorite)})}catch(e){res.status(500).json({error:e?.message||"Faylni ochib bo‘lmadi."})}});
 app.get("/api/files/:id/download",(req,res)=>{const meta=getMeta(req.params.id);if(!meta||!fs.existsSync(filePath(meta.id)))return res.status(404).json({error:"Fayl topilmadi."});res.download(filePath(meta.id),meta.name)});
 app.post("/api/files/:id/favorite",(req,res)=>{const meta=getMeta(req.params.id);if(!meta)return res.status(404).json({error:"Fayl topilmadi."});const favorite=!meta.favorite;upsertMeta({...meta,favorite});res.json({ok:true,favorite})});
-function cleanJson(t){const raw=String(t||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/i,"");const s=raw.indexOf("{");const e=raw.lastIndexOf("}");return s>=0&&e>s?raw.slice(s,e+1):raw}
+function cleanJson(t){const v=String(t||"").replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/i,"").trim(),s=v.indexOf("{"),e=v.lastIndexOf("}");return s>=0&&e>s?v.slice(s,e+1):v}
 function parseAiPayload(raw){try{return JSON.parse(cleanJson(raw))}catch{return null}}
 app.post("/api/chat",async(req,res)=>{try{
- if(!textClient)return res.status(503).json({error:"AI kaliti serverda sozlanmagan. Render → Environment → GROQ_API_KEY ni kiriting."});
- const instruction=String(req.body?.instruction||"").trim();if(!instruction)return res.status(400).json({error:"So‘rov yozing."});
- const documentText=String(req.body?.documentText||"").slice(0,120000);
- const system=`Siz professional AI Word Studio yordamchisisiz. O‘zbek tilida javob bering. Ichki texnik yozuvlarni chiqarmang. Foydalanuvchi hujjatni tahrirlash, qayta yozish, davom ettirish, to‘ldirish yoki grammatika tuzatishni so‘rasa changed=true va editedDocument to‘liq tayyor matn bo‘lsin. Oddiy savol, tahlil yoki tushuntirish bo‘lsa changed=false. Hujjat bo‘sh bo‘lsa topshiriq asosida noldan yarating. FAQAT JSON qaytaring: {"changed":true,"answer":"qisqa javob","editedDocument":"to‘liq matn yoki bo‘sh satr"}`;
- let response;try{response=await textClient.chat.completions.create({model,temperature:.2,messages:[{role:"system",content:system},{role:"user",content:`Hozirgi hujjat:\n${documentText}\n\nFoydalanuvchi topshirig‘i:\n${instruction}`}]});}catch(e){console.error("CHAT PROVIDER",e);const status=Number(e?.status)||502;return res.status(status>=400&&status<600?status:502).json({error:`Groq AI xatosi: ${e?.message||"noma’lum xatolik"}`})}
- const data=parseAiPayload(response.choices?.[0]?.message?.content||"");if(!data)return res.status(502).json({error:"AI javobi o‘qilmadi. Render Environment dagi GROQ_MODEL qiymatini tekshiring."});
- res.json({changed:Boolean(data.changed),answer:String(data.answer||""),editedDocument:String(data.editedDocument||""),documentId:String(req.body?.documentId||"")});
+  if(!textClient)return res.status(503).json({error:"Gemini API kaliti serverda sozlanmagan. Render → Environment → GEMINI_API_KEY ni kiriting."});
+  const instruction=String(req.body?.instruction||"").trim();
+  if(!instruction)return res.status(400).json({error:"So‘rov yozing."});
+  const documentText=String(req.body?.documentText||"").slice(0,120000);
+  const system=`Siz professional AI Word Studio yordamchisisiz. O‘zbek tilida javob bering. Ichki texnik yozuvlarni chiqarmang. Foydalanuvchi hujjatni tahrirlash, qayta yozish, davom ettirish, to‘ldirish yoki grammatikani tuzatishni so‘rasa changed=true va editedDocument to‘liq tayyor matn bo‘lsin. Oddiy savol, tahlil yoki tushuntirish bo‘lsa changed=false. Hujjat bo‘sh bo‘lsa topshiriq asosida noldan yarating. FAQAT quyidagi JSON obyektni qaytaring: {"changed":true,"answer":"foydalanuvchiga javob","editedDocument":"to‘liq matn yoki bo‘sh satr"}.`;
+  const user=`Hozirgi hujjat:\n${documentText}\n\nFoydalanuvchi topshirig‘i:\n${instruction}`;
+  let response;
+  try{
+    response=await textClient.chat.completions.create({model,temperature:.2,messages:[{role:"system",content:system},{role:"user",content:user}]});
+  }catch(firstError){
+    console.error("GEMINI PROVIDER",firstError);
+    const status=Number(firstError?.status)||502;
+    return res.status(status>=400&&status<600?status:502).json({error:`Gemini AI xatosi: ${firstError?.message||"noma’lum xatolik"}`});
+  }
+  const raw=response.choices?.[0]?.message?.content||"";
+  const data=parseAiPayload(raw);
+  if(!data){
+    return res.status(502).json({error:"Gemini javobi JSON formatida kelmadi. Render → GEMINI_MODEL qiymatini tekshiring."});
+  }
+  res.json({changed:Boolean(data.changed),answer:String(data.answer||""),editedDocument:String(data.editedDocument||""),documentId:String(req.body?.documentId||"")});
 }catch(e){console.error("CHAT",e);res.status(Number(e?.status)||500).json({error:e?.message||"AI bilan bog‘lanishda xatolik."})}});
 function escapeXml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&apos;")}
 function paragraphReplace(xml,text){const value=escapeXml(text);let used=false;return xml.replace(/(<w:t(?:\s[^>]*)?>)([\s\S]*?)(<\/w:t>)/g,(_m,o,old,c)=>{if(used)return`${o}${old}${c}`;used=true;return`${o}${value}${c}`})}
