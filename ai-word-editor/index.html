@@ -1,68 +1,32 @@
 <!doctype html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="AI Word Studio — zamonaviy Word muharriri.">
-  <title>AI Word Studio</title>
-  <link rel="stylesheet" href="./style.css?v=github20260913">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020"><meta name="description" content="AI Word Studio Pro — professional AI hujjat muharriri.">
+<title>AI Word Studio Pro</title>
+<link rel="stylesheet" href="./style.css?v=pro20260914">
 </head>
 <body>
-<div class="app" id="appRoot">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand"><div class="brand-mark">W</div><div class="brand-copy"><h1>AI Word Studio</h1><small>Write · Edit · Create</small></div><button class="icon-btn mobile-only" id="sidebarClose" aria-label="Yopish">×</button></div>
-    <button class="new-doc" id="newBtn" type="button"><span>＋</span> Yangi hujjat <kbd>Ctrl N</kbd></button>
-    <nav class="nav" aria-label="Asosiy menyu">
-      <button class="nav-btn active" data-view="home" type="button"><span>⌂</span><span>Bosh sahifa</span></button>
-      <button class="nav-btn" data-view="files" type="button"><span>▣</span><span>Mening fayllarim</span><b class="nav-count" id="filesCount">0</b></button>
-      <button class="nav-btn" data-view="recent" type="button"><span>◷</span><span>Yaqinda</span></button>
-      <button class="nav-btn" data-view="favorites" type="button"><span>★</span><span>Sevimlilar</span></button>
-      <button class="nav-btn" data-view="templates" type="button"><span>✦</span><span>Andozalar</span></button>
-      <button class="nav-btn" data-view="settings" type="button"><span>⚙</span><span>Sozlamalar</span></button>
-    </nav>
-    <div class="sidebar-card">
-      <div class="mini-label">Hujjat holati</div>
-      <div class="health-row"><span id="healthDot" class="health-dot online"></span><strong id="healthText">Tayyor</strong></div>
-      <div class="metric-grid"><div><b id="wordCountSide">0</b><span>so‘z</span></div><div><b id="charCountSide">0</b><span>belgi</span></div><div><b id="readTimeSide">0</b><span>daq.</span></div></div>
-      <div class="progress"><span id="scoreBar"></span></div><div class="score-line"><span>Hujjat skori</span><strong id="scoreValue">0/100</strong></div>
-    </div>
-    <div class="sidebar-bottom"><div class="profile-card"><div class="avatar">J</div><div class="profile-copy"><strong>Mehmon</strong><span>AI Word Studio</span></div><span class="guest-pill">FREE</span></div></div>
-  </aside>
-
-  <header class="topbar">
-    <button class="mobile-menu icon-btn mobile-only" id="sidebarOpen" aria-label="Menyu">☰</button>
-    <div class="crumb"><span>AI Word Studio</span><b>›</b><strong id="topFileName">Yangi AI hujjat.docx</strong></div>
-    <div class="top-actions"><button class="top-btn" id="searchBtn" type="button">⌕ Qidirish <kbd>Ctrl F</kbd></button><button class="top-btn" id="templatesBtn" type="button">✦ Andoza</button><button class="top-btn" id="filesTopBtn" type="button">▣ Fayllar</button><button class="top-btn primary-lite" id="wordBtn" type="button">↑ Word ochish</button><input id="fileInput" type="file" accept=".docx" hidden><input id="mediaInput" type="file" multiple accept="image/png,image/jpeg,image/jpg,image/gif,image/bmp,video/*" hidden></div>
-  </header>
-
-  <main class="workspace">
-    <section class="doc-shell" id="docShell">
-      <div class="doc-toolbar"><div class="toolbar-group">
-        <button class="tool" type="button" data-cmd="undo" title="Orqaga">↶</button><button class="tool" type="button" data-cmd="redo" title="Qayta">↷</button><span class="divider"></span><button class="tool" type="button" data-cmd="bold"><b>B</b></button><button class="tool" type="button" data-cmd="italic"><i>I</i></button><button class="tool" type="button" data-cmd="underline"><u>U</u></button><button class="tool" type="button" data-cmd="strikeThrough"><s>S</s></button><span class="divider"></span><button class="tool" type="button" data-cmd="justifyLeft">☰</button><button class="tool" type="button" data-cmd="justifyCenter">≡</button><button class="tool" type="button" data-cmd="justifyRight">☷</button><button class="tool" type="button" data-cmd="insertUnorderedList">•☰</button><select class="style-select" id="blockStyle" aria-label="Matn turi"><option value="p">Oddiy matn</option><option value="h2">Sarlavha</option><option value="h3">Kichik sarlavha</option></select>
-      </div><div class="toolbar-group toolbar-right"><span class="save-status" id="statusText"><span class="status-dot"></span>Tayyor</span><button class="tool soft" id="focusBtn" type="button">◒ Fokus</button><button class="save-btn" id="saveBtn" type="button">✓ Saqlash</button><button class="download-btn" id="downloadBtn" type="button">↓ Word</button></div></div>
-      <div class="document-header"><div class="title-row"><div class="doc-title" id="docTitle" contenteditable="true" spellcheck="false">Yangi AI hujjat</div><button class="favorite-btn" id="favoriteBtn" type="button" title="Sevimliga qo‘shish">☆</button></div><div class="doc-meta"><span id="fileName">Yangi AI hujjat.docx</span><span>·</span><span id="saveState">Tayyor</span><span>·</span><span id="updatedTime">Hali saqlanmagan</span></div></div>
-      <div class="doc-wrap" id="docWrap"><div class="editor" id="editor" contenteditable="true" spellcheck="true" data-placeholder="Hujjatingizni shu yerda yozing…"></div><div class="drop-zone" id="dropZone"><div class="drop-icon">＋</div><strong>Media faylni shu yerga tashlang</strong><span>PNG, JPG yoki video preview</span></div><div class="find-bar" id="findBar" hidden><input id="findInput" placeholder="Hujjat ichidan qidirish…" autocomplete="off"><span id="findCount">0 ta</span><button id="findPrev" type="button">↑</button><button id="findNext" type="button">↓</button><button id="findClose" type="button">×</button></div></div>
-      <div class="doc-status"><div><span class="live-pill"><i></i> Jonli tahrirlash</span><span id="selectionInfo">Kursor tayyor</span></div><div><span id="wordCount">0 so‘z</span><span>·</span><span id="charCount">0 belgi</span><span>·</span><span id="readTime">0 daqiqa o‘qish</span></div></div>
-    </section>
-  </main>
-
-  <aside class="chat" id="chatPanel"><div class="chat-top"><div class="ai-id"><div class="ai-orb"><span>AI</span></div><div><div class="chat-title">AI yordamchi</div><div class="chat-sub"><span class="online-dot"></span> Tayyor · Hujjatni tushunadi</div></div></div><button class="icon-btn" id="clearChat" type="button" title="Chatni tozalash">⌫</button></div>
-    <div class="ai-hero"><div class="hero-badge">AI WORD STUDIO</div><h2>Hujjatingizni kuchaytiring.</h2><p>Matn yozing, savol bering yoki tayyor amallardan foydalaning.</p></div>
-    <div class="messages" id="messages"><div class="bubble ai welcome-bubble"><strong>Salom! 👋</strong></div></div>
-    <div class="suggestions" id="suggestions"><button type="button" data-prompt="Imlo va grammatik xatolarni tuzat, lekin ma’noni o‘zgartirma.">✎ Imlo</button><button type="button" data-prompt="Hujjatni professional va aniq uslubda qayta yoz.">✦ Professional</button><button type="button" data-prompt="Hujjatni 40 foizga qisqartir, asosiy fikrlarni saqla.">↘ Qisqartir</button><button type="button" data-prompt="Hujjatning 5 bandli qisqa xulosasini tayyorla.">☷ Xulosa</button><button type="button" data-prompt="Shu mavzu bo‘yicha kuchli kirish qismi yoz.">＋ Kirish</button><button type="button" data-prompt="Shu mavzu bo‘yicha aniq va ta’sirli yakun yoz.">✓ Yakun</button></div>
-    <div class="composer"><textarea id="prompt" placeholder="AI ga topshiriq yozing…" aria-label="AI uchun topshiriq"></textarea><div class="composer-row"><div class="composer-tools"><button class="attach" id="chatAttach" type="button">＋ Media</button><button class="attach" id="insertTemplateBtn" type="button">✦ Andoza</button></div><button class="send" id="sendBtn" type="button">Yuborish <span>↗</span></button></div><div class="composer-hint">Enter yuboradi · Shift+Enter yangi qator</div></div>
-  </aside>
-</div>
-
-<div class="overlay" id="overlay" hidden></div>
-<div class="files-panel" id="filesPanel" aria-hidden="true"><div class="panel-head"><div><strong id="filesTitle">Mening fayllarim</strong><span id="panelSub">Brauzerda saqlangan hujjatlar</span></div><button class="icon-btn" id="closeFiles" type="button">×</button></div><div class="panel-tabs"><button class="active" data-filter="all" type="button">Barchasi</button><button data-filter="favorite" type="button">★ Sevimlilar</button></div><div id="filesBody"></div></div>
-<div class="modal" id="templateModal" hidden><div class="modal-card wide"><div class="panel-head"><div><strong>Hujjat andozalari</strong><span>Tayyor strukturadan boshlang</span></div><button class="icon-btn" id="closeTemplates" type="button">×</button></div><div class="template-grid" id="templateGrid"></div></div></div>
-<div class="modal" id="settingsModal" hidden><div class="modal-card"><div class="panel-head"><div><strong>Sozlamalar</strong><span>AI Word Studio</span></div><button class="icon-btn" id="closeSettings" type="button">×</button></div><div class="setting-row"><div><b>Avtomatik saqlash</b><span>O‘zgarishlarni brauzer xotirasiga yozish</span></div><label class="switch"><input id="autosaveToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b>Yorug‘lik rejimi</b><span>Interfeys ko‘rinishini tanlash</span></div><button class="mode-btn" id="themeToggle" type="button">☾ Tungi</button></div><div class="setting-row"><div><b>AI rejimi</b><span>Server talab qilinmaydi</span></div><span class="server-pill ok" id="serverPill">LOCAL</span></div></div></div>
-<div class="toast-stack" id="toastStack" aria-live="polite"></div>
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.12.0/mammoth.browser.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
-<script src="./app.js?v=github20260913"></script>
-<script src="./chat-fix.js?v=github20260913"></script>
-</body>
-</html>
+<div class="app">
+<aside class="sidebar"><div class="brand"><div class="logo">W</div><div><b>AI Word Studio</b><small>Professional</small></div></div>
+<button class="primary new" id="newBtn">＋ Yangi hujjat</button>
+<nav><button class="nav active" data-view="editor">⌂ Bosh sahifa</button><button class="nav" data-view="files">▣ Mening fayllarim</button><button class="nav" data-view="templates">✦ Andozalar</button><button class="nav" data-view="settings">⚙ Sozlamalar</button></nav>
+<div class="side-card"><div class="label">AI holati</div><div><span class="dot" id="statusDot"></span><strong id="serverStatus">Tekshirilmoqda...</strong></div><div class="mini-stats"><span><b id="wordSide">0</b> so‘z</span><span><b id="charSide">0</b> belgi</span><span><b id="timeSide">0</b> daq.</span></div><div class="scoreline"><span>Hujjat skori</span><b id="scoreSide">--/100</b></div></div>
+<div class="side-bottom"><div class="profile"><div class="avatar">J</div><div><b>Mehmon</b><small>AI Word Studio</small></div><span>FREE</span></div><button class="nav" id="themeBtn">◐ Tungi rejim</button></div></aside>
+<main class="main"><header class="topbar"><div class="crumb">AI Word Studio <span>›</span> <b id="crumbTitle">Yangi AI hujjat</b></div><div class="actions"><button id="importBtn">↑ Word ochish</button><button class="primary small" id="saveBtn">✓ Saqlash</button><button id="exportBtn">↓ Word</button></div></header>
+<section id="editorView" class="view"><div class="workspace"><section class="editor-area"><div class="toolbar"><button data-cmd="undo">↶</button><button data-cmd="redo">↷</button><i></i><button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button><button data-cmd="underline"><u>U</u></button><button data-cmd="strikeThrough"><s>S</s></button><i></i><button data-cmd="justifyLeft">≡</button><button data-cmd="justifyCenter">≣</button><button data-cmd="justifyRight">≡</button><select id="fontSize"><option value="3">12</option><option value="4">14</option><option value="5">18</option><option value="6">24</option></select><button data-cmd="insertUnorderedList">• List</button></div>
+<div class="docbar"><div><input id="titleInput" value="Yangi AI hujjat"><small id="saveState">Hali saqlanmagan</small></div><button id="focusBtn">◒ Fokus</button></div>
+<article id="editor" class="paper" contenteditable="true" spellcheck="true"><h1>Yangi hujjat</h1><p>Bu yerga yozishni boshlang...</p></article>
+<div class="footer"><span id="wordCount">0 so‘z</span><span id="charCount">0 belgi</span><span id="readingTime">0 daqiqa o‘qish</span><span class="grow"></span><span>Jonli tahrirlash</span></div></section>
+<aside class="ai-panel"><div class="ai-head"><div class="ai-name"><div class="ai-orb">AI</div><div><b>AI yordamchi</b><small><span class="dot"></span> Hujjatni tushunadi</small></div></div><select id="modeSelect"><option value="writer">Writer</option><option value="professional">Professional</option><option value="student">Student</option><option value="academic">Academic</option><option value="creative">Creative</option><option value="technical">Technical</option><option value="editor">Editor</option></select></div>
+<div class="score-card"><div class="score-ring"><b id="scoreValue">--</b><small>/100</small></div><div><b>Hujjat tahlili</b><span>AI orqali tekshiring</span></div><button id="analyzeBtn">Tahlil</button></div>
+<div id="chat" class="chat"><div class="bubble ai">Salom! 👋 Hujjatingizni yuboring yoki topshiriq yozing. Men uni tushunib, tahrirlashga yordam beraman.</div><div class="quick"><button data-prompt="Imlo va grammatik xatolarni topib, tuzat.">✎ Imlo</button><button data-prompt="Matnni professional va aniq uslubda qayta yoz.">✦ Professional</button><button data-prompt="Matnni 40 foizga qisqartir va asosiy fikrlarni saqla.">↘ Qisqartir</button><button data-prompt="Hujjatning kuchli 5 bandli xulosasini yoz.">☷ Xulosa</button><button data-prompt="Mavzu uchun kuchli kirish yoz.">＋ Kirish</button><button data-prompt="Mavzu uchun aniq va ta’sirli yakun yoz.">✓ Yakun</button></div></div>
+<div id="applyBar" class="apply hidden"><div><b>AI tahriri tayyor</b><small id="changeInfo">Natijani hujjatga qo‘llash mumkin.</small></div><button class="primary" id="applyBtn">✓ Qo‘llash</button></div>
+<div class="composer"><textarea id="prompt" placeholder="AI ga topshiriq yozing..."></textarea><div class="composer-row"><span>Enter yuboradi · Shift+Enter yangi qator</span><button id="sendBtn" class="send">Yuborish ↗</button></div></div></aside></div></section>
+<section id="filesView" class="view hidden"><div class="page"><h1>Mening fayllarim</h1><p>Brauzerda saqlangan hujjatlar.</p><div id="filesGrid" class="cards"></div></div></section>
+<section id="templatesView" class="view hidden"><div class="page"><h1>Andozalar</h1><p>Professional hujjatdan tez boshlang.</p><div class="cards"><button class="card template" data-template="CV">💼 <b>Professional CV</b><small>CV uchun tayyor struktura</small></button><button class="card template" data-template="Referat">🎓 <b>Referat</b><small>Kirish, asosiy qism, xulosa</small></button><button class="card template" data-template="Loyiha">🚀 <b>Loyiha hujjati</b><small>Muammo, yechim va natija</small></button><button class="card template" data-template="Maqola">📰 <b>Maqola</b><small>Professional maqola tuzilishi</small></button></div></div></section>
+<section id="settingsView" class="view hidden"><div class="page"><h1>Sozlamalar</h1><div class="setting"><label>Avtomatik saqlash <input id="autosave" type="checkbox" checked></label><label>AI ulanishi <span class="pill">Secure backend</span></label><label>Ko‘rinish <button id="themeBtn2">Tungi / Yorug‘</button></label></div></div></section>
+</main></div>
+<input id="fileInput" type="file" accept=".docx" hidden><div id="toast"></div>
+<script src="./app.js?v=pro20260914"></script>
+</body></html>
